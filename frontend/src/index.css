@@ -1517,17 +1517,25 @@ textarea:focus-visible {
 }
 
 .graph-controls button {
-  display: grid;
-  width: 42px;
+  display: inline-flex;
   height: 42px;
-  place-items: center;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
   border: 1px solid #cdd8d1;
   border-radius: 9px;
   color: #4e6358;
   background: #fff;
+  font-size: 10px;
+  font-weight: 700;
   cursor: pointer;
 }
 
+.graph-export-controls details {
+  position: relative;
+}
+
+.graph-export-controls summary,
 .graph-export-controls button {
   display: inline-flex;
   height: 42px;
@@ -1543,8 +1551,43 @@ textarea:focus-visible {
   cursor: pointer;
 }
 
-.graph-controls button:hover,
-.graph-export-controls button:hover:not(:disabled) {
+.graph-export-controls summary {
+  list-style: none;
+}
+
+.graph-export-controls summary::-webkit-details-marker {
+  display: none;
+}
+
+.graph-export-controls summary[aria-disabled='true'],
+.graph-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.graph-export-menu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  min-width: 150px;
+  padding: 6px;
+  border: 1px solid #d9e2dc;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgb(40 63 51 / 14%);
+}
+
+.graph-export-menu button {
+  height: 34px;
+  justify-content: flex-start;
+  border: 0;
+}
+
+.graph-controls button:hover:not(:disabled),
+.graph-export-controls summary:hover:not([aria-disabled='true']),
+.graph-export-controls button:hover {
   border-color: #8eb09c;
   color: #215f42;
   background: #f4f8f5;

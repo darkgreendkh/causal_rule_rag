@@ -1,5 +1,5 @@
 import cytoscape, { type Core, type ElementDefinition } from 'cytoscape'
-import { Download, Maximize2, Network, Search, ZoomIn, ZoomOut } from 'lucide-react'
+import { ChevronDown, Download, Network, Search, WandSparkles } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { listDocuments, loadGraph } from '../api'
@@ -26,9 +26,19 @@ const ENTITY_COLORS: Record<string, string> = {
   OTHER: '#56645d',
 }
 
+const GRAPH_LAYOUT = {
+  name: 'cose',
+  fit: true,
+  padding: 64,
+  nodeOverlap: 20,
+  idealEdgeLength: 110,
+  componentSpacing: 100,
+} as const
+
 export default function GraphPage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const graphRef = useRef<Core | null>(null)
+  const exportMenuRef = useRef<HTMLDetailsElement>(null)
   const [documents, setDocuments] = useState<DocumentSummary[]>([])
   const [documentId, setDocumentId] = useState('')
   const [search, setSearch] = useState('')
@@ -41,6 +51,17 @@ export default function GraphPage() {
     void listDocuments()
       .then((items) => setDocuments(items.filter((item) => item.status === 'COMPLETED')))
       .catch(() => setDocuments([]))
+  }, [])
+
+  useEffect(() => {
+    const closeExportMenu = (event: MouseEvent) => {
+      const menu = exportMenuRef.current
+      if (menu && event.target instanceof Node && !menu.contains(event.target)) {
+        menu.open = false
+      }
+    }
+    document.addEventListener('click', closeExportMenu)
+    return () => document.removeEventListener('click', closeExportMenu)
   }, [])
 
   useEffect(() => {
@@ -116,13 +137,8 @@ export default function GraphPage() {
       container: containerRef.current,
       elements,
       layout: {
-        name: 'cose',
+        ...GRAPH_LAYOUT,
         animate: false,
-        fit: true,
-        padding: 64,
-        nodeOverlap: 20,
-        idealEdgeLength: 110,
-        componentSpacing: 100,
       },
       selectionType: 'single',
       minZoom: 0.1,
@@ -238,11 +254,15 @@ export default function GraphPage() {
     }
   }, [visibleGraph])
 
-  function zoomBy(factor: number) {
+  function arrangeGraph() {
     const instance = graphRef.current
-    if (!instance) return
-    instance.zoom(instance.zoom() * factor)
-    instance.center()
+    if (!instance || instance.nodes().empty()) return
+    instance.layout({
+      ...GRAPH_LAYOUT,
+      animate: true,
+      animationDuration: 500,
+      randomize: true,
+    }).run()
   }
 
   function exportTimestamp() {
@@ -268,16 +288,19 @@ export default function GraphPage() {
   function exportPng() {
     const blob = graphRef.current!.png({ output: 'blob', bg: '#ffffff', full: false, scale: 2 })
     downloadBlob(blob, 'png')
+    exportMenuRef.current?.removeAttribute('open')
   }
 
   function exportJson() {
     const blob = new Blob([JSON.stringify(getExportData(), null, 2)], { type: 'application/json' })
     downloadBlob(blob, 'json')
+    exportMenuRef.current?.removeAttribute('open')
   }
 
   function exportGraphMl() {
     const blob = new Blob([serializeGraphMl(getExportData())], { type: 'application/graphml+xml' })
     downloadBlob(blob, 'graphml')
+    exportMenuRef.current?.removeAttribute('open')
   }
 
   const exportDisabled = loading || visibleGraph.nodes.length === 0
@@ -310,20 +333,24 @@ export default function GraphPage() {
             <span><strong>{visibleGraph.edges.length}</strong> 条关系</span>
           </div>
           <div className="graph-export-controls" aria-label="图谱导出控制">
-            <button type="button" disabled={exportDisabled} onClick={exportPng} title="导出当前画面为 PNG">
-              <Download size={15} /> PNG
-            </button>
-            <button type="button" disabled={exportDisabled} onClick={exportJson} title="导出当前筛选结果为 JSON">
-              <Download size={15} /> JSON
-            </button>
-            <button type="button" disabled={exportDisabled} onClick={exportGraphMl} title="导出当前筛选结果为 GraphML">
-              <Download size={15} /> GraphML
-            </button>
+            <details ref={exportMenuRef}>
+              <summary
+                aria-disabled={exportDisabled}
+                onClick={(event) => exportDisabled && event.preventDefault()}
+              >
+                <Download size={15} /> 导出 <ChevronDown size={14} />
+              </summary>
+              <div className="graph-export-menu">
+                <button type="button" onClick={exportPng}>PNG 图片</button>
+                <button type="button" onClick={exportJson}>JSON 数据</button>
+                <button type="button" onClick={exportGraphMl}>GraphML 图谱</button>
+              </div>
+            </details>
           </div>
-          <div className="graph-controls" aria-label="图谱缩放控制">
-            <button type="button" aria-label="放大图谱" onClick={() => zoomBy(1.2)}><ZoomIn size={17} /></button>
-            <button type="button" aria-label="缩小图谱" onClick={() => zoomBy(0.8)}><ZoomOut size={17} /></button>
-            <button type="button" aria-label="复位图谱" onClick={() => graphRef.current?.fit(undefined, 64)}><Maximize2 size={17} /></button>
+          <div className="graph-controls" aria-label="图谱布局控制">
+            <button type="button" disabled={exportDisabled} onClick={arrangeGraph}>
+              <WandSparkles size={17} /> 一键整理
+            </button>
           </div>
         </div>
       </div>
