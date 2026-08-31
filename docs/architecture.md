@@ -83,8 +83,9 @@ Browser :5173 → FastAPI :8000 → Neo4j Bolt :7687
 ```
 
 文件上传使用 `multipart/form-data`；其余写接口使用 JSON。前端每 3 秒轮询文档列表以
-更新处理状态。问答页把最多 20 轮完整结果保存在浏览器 localStorage，请求时只发送
-最近三轮问答文本。CORS 默认只允许 `http://localhost:5173`。
+更新处理状态。问答页在浏览器 localStorage 保存多个本地会话，每个会话最多 20 轮
+完整结果；请求时只发送当前会话最近三轮问答文本。CORS 默认只允许
+`http://localhost:5173`。
 
 ## Neo4j 数据模型
 
