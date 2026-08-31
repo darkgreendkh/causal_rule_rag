@@ -1,0 +1,93 @@
+:root {
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #17221d;
+  background: #f2f6f2;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+}
+
+.shell {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 56px 0;
+}
+
+header {
+  max-width: 720px;
+}
+
+.eyebrow {
+  color: #2d7254;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+h1 {
+  margin: 8px 0 12px;
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.08;
+}
+
+header > p:last-child {
+  color: #58655f;
+  line-height: 1.7;
+}
+
+nav {
+  display: flex;
+  gap: 10px;
+  margin: 36px 0 24px;
+}
+
+nav button {
+  border: 1px solid #cbd8d0;
+  border-radius: 999px;
+  padding: 10px 18px;
+  color: #254c39;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.empty-state {
+  min-height: 320px;
+  padding: 48px;
+  border: 1px solid #dce5df;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgb(35 75 54 / 8%);
+}
+
+.empty-state span {
+  color: #2d7254;
+  font-size: 14px;
+}
+
+.empty-state h2 {
+  margin-top: 16px;
+}
+
+@media (max-width: 640px) {
+  .shell {
+    width: min(100% - 24px, 1120px);
+    padding: 28px 0;
+  }
+
+  .empty-state {
+    padding: 28px;
+  }
+}
