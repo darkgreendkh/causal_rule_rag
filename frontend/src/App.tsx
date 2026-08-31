@@ -26,10 +26,15 @@ const NAV_ITEMS: Array<{ id: Page; label: string; icon: LucideIcon }> = [
 export default function App() {
   const [page, setPage] = useState<Page>('overview')
 
+  function navigate(nextPage: Page) {
+    setPage(nextPage)
+    window.scrollTo({ top: 0 })
+  }
+
   return (
     <div className="app-shell">
       <aside className="app-sidebar">
-        <Brand onClick={() => setPage('overview')} />
+        <Brand onClick={() => navigate('overview')} />
         <nav aria-label="主导航">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
@@ -38,7 +43,7 @@ export default function App() {
                 className={page === item.id ? 'active' : ''}
                 key={item.id}
                 type="button"
-                onClick={() => setPage(item.id)}
+                onClick={() => navigate(item.id)}
               >
                 <Icon aria-hidden="true" size={19} strokeWidth={1.8} />
                 <span>{item.label}</span>
@@ -54,10 +59,10 @@ export default function App() {
 
       <div className="app-workspace">
         <header className="mobile-header">
-          <Brand onClick={() => setPage('overview')} compact />
+          <Brand onClick={() => navigate('overview')} compact />
         </header>
         <main className="content-shell">
-          {page === 'overview' && <OverviewPage onNavigate={setPage} />}
+          {page === 'overview' && <OverviewPage onNavigate={navigate} />}
           {page === 'documents' && <DocumentsPage />}
           {page === 'graph' && (
             <Suspense fallback={<div className="panel page-loading">正在加载图谱组件…</div>}>

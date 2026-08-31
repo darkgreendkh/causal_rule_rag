@@ -24,7 +24,7 @@ interface ConversationItem {
 }
 
 export default function QAPage() {
-  const messageEndRef = useRef<HTMLDivElement>(null)
+  const messageListRef = useRef<HTMLDivElement>(null)
   const [question, setQuestion] = useState('')
   const [mode, setMode] = useState<RetrievalMode>('hybrid')
   const [turns, setTurns] = useState<ConversationItem[]>(loadConversation)
@@ -47,7 +47,8 @@ export default function QAPage() {
   }, [turns])
 
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    const messageList = messageListRef.current
+    if (messageList) messageList.scrollTop = messageList.scrollHeight
   }, [turns, loading])
 
   const selectedTurn = useMemo(
@@ -113,7 +114,7 @@ export default function QAPage() {
             <small>当前会话保存在本地浏览器</small>
           </div>
 
-          <div className="message-list" aria-live="polite">
+          <div className="message-list" ref={messageListRef} aria-live="polite">
             {turns.length === 0 && !loading ? (
               <div className="conversation-empty">
                 <span><MessageCircleQuestion size={28} /></span>
@@ -165,7 +166,6 @@ export default function QAPage() {
                 <div><i /><i /><i /><span>正在检索证据并生成回答</span></div>
               </div>
             )}
-            <div ref={messageEndRef} />
           </div>
 
           {error && <p className="error-banner composer-error">{error}</p>}

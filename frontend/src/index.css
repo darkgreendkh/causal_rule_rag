@@ -1640,6 +1640,16 @@ textarea:focus-visible {
 }
 
 @media (max-width: 520px) {
+  .app-sidebar nav {
+    gap: 4px;
+  }
+
+  .app-sidebar nav button {
+    gap: 4px;
+    padding-inline: 7px;
+    font-size: 12px;
+  }
+
   .stat-grid,
   .quick-action-grid {
     grid-template-columns: 1fr;
