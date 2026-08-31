@@ -135,7 +135,6 @@ export default function QAPage() {
                   <div className="user-message-row">
                     <div className="message-avatar user-avatar"><User size={16} /></div>
                     <div className="user-message">
-                      <small>你</small>
                       <p>{turn.question}</p>
                     </div>
                   </div>
@@ -146,12 +145,6 @@ export default function QAPage() {
                       type="button"
                       onClick={() => setSelectedTurnId(turn.id)}
                     >
-                      <span className="assistant-message-heading">
-                        <strong>法规问答助手</strong>
-                        <span className="mode-pill">
-                          {turn.result.mode === 'hybrid' ? '混合检索' : '纯向量'}
-                        </span>
-                      </span>
                       <span className="answer-text">{turn.result.answer}</span>
                       <small>{turn.result.sources.length} 条证据 · 点击查看详情</small>
                     </button>
