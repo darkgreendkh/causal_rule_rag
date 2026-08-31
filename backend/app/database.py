@@ -2,6 +2,7 @@ import re
 
 from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError
+from neo4j.time import DateTime as Neo4jDateTime
 
 from app.config import Settings
 from app.models import (
@@ -105,7 +106,7 @@ class Neo4jStore:
         records, _, _ = self._driver.execute_query(
             "MATCH (d:Document) RETURN d ORDER BY d.created_at DESC"
         )
-        return [DocumentRecord.model_validate(dict(record["d"])) for record in records]
+        return [_document_from_node(record["d"]) for record in records]
 
     def update_document_status(
         self,
@@ -402,7 +403,14 @@ class Neo4jStore:
 def _document_from_records(records: list) -> DocumentRecord | None:
     if not records:
         return None
-    return DocumentRecord.model_validate(dict(records[0]["d"]))
+    return _document_from_node(records[0]["d"])
+
+
+def _document_from_node(node: object) -> DocumentRecord:
+    values = dict(node)
+    if isinstance(values.get("created_at"), Neo4jDateTime):
+        values["created_at"] = values["created_at"].to_native()
+    return DocumentRecord.model_validate(values)
 
 
 def _clean_entity_name(name: str) -> str:

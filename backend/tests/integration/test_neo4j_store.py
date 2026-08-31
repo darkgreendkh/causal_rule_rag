@@ -60,6 +60,7 @@ def test_neo4j_store_indexes_graph_and_cleans_document(tmp_path: Path) -> None:
         store.save_chunks(document_id, [chunk])
         store.save_triples(document_id, chunk.id, [triple])
 
+        assert document_id in {item.id for item in store.list_documents()}
         assert [item.id for item in store.list_chunks(document_id)] == [chunk.id]
         assert store.vector_search(chunk.embedding, limit=1)[0].chunk_id == chunk.id
         graph = store.get_graph(document_id, limit=300)

@@ -80,8 +80,8 @@ class ChunkView(BaseModel):
     document_id: str
     index: int
     text: str
-    heading: str | None
-    article_no: str | None
+    heading: str | None = None
+    article_no: str | None = None
 
 
 class Source(BaseModel):

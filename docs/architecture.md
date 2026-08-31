@@ -91,6 +91,8 @@ Browser :5173 → FastAPI :8000 → Neo4j Bolt :7687
 - `Chunk.embedding` 使用 1024 维 cosine 向量索引。
 - `Entity.key` 由实体类型和规范化名称组成，用于跨 Chunk 合并实体。
 - `source_chunk_id` 用于从关系回溯原文，也用于按文档清理派生关系。
+- 数据库边界将 Neo4j `DateTime` 转为 Python `datetime`；Neo4j 未保存的可空 Chunk
+  属性在 API 模型中恢复为 `None`。
 
 ## 目录结构
 
