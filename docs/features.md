@@ -70,6 +70,7 @@
 - 健康检查返回 Neo4j 连通性、embedding 模型名和 LLM 配置状态。
 - Docker Compose 提供 Neo4j 5.26 Community 单节点环境。
 - 后端包含分块、摄取、抽取、检索、API 单元测试及可选 Neo4j 集成测试。
+- 健康检查测试使用显式测试配置，不受根目录 `.env` 是否配置 LLM 影响。
 - 前端提供 ESLint、TypeScript 检查和 Vite 生产构建。
 
 ## 当前不包含

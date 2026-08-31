@@ -67,6 +67,9 @@ PENDING → PARSING → EMBEDDING → EXTRACTING_GRAPH → COMPLETED
 | `app/models.py` | API、状态、实体、来源和图谱数据模型 |
 | `app/config.py` | 环境变量和默认配置 |
 
+应用配置由 `create_app` 注入；自动化测试显式传入测试配置，不读取开发者本地的 LLM
+密钥与模型设置。
+
 ## 前后端通信
 
 前端通过 `frontend/src/api.ts` 使用 HTTP JSON API 调用 FastAPI。开发环境默认是：

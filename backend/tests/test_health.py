@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from app.config import Settings
 from app.main import create_app
 
 
@@ -9,7 +10,10 @@ class HealthyStore:
 
 
 def test_health_reports_service_readiness() -> None:
-    app = create_app(store=HealthyStore())
+    app = create_app(
+        store=HealthyStore(),
+        settings=Settings(llm_base_url="", llm_api_key="", llm_model=""),
+    )
 
     with TestClient(app) as client:
         response = client.get("/api/health")
