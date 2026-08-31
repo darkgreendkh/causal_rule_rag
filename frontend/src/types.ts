@@ -49,6 +49,11 @@ export interface GraphResponse {
 
 export type RetrievalMode = 'vector' | 'hybrid'
 
+export interface ConversationHistoryTurn {
+  question: string
+  answer: string
+}
+
 export interface Source {
   chunk_id: string
   document_id: string

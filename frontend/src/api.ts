@@ -1,5 +1,6 @@
 import type {
   ChunkView,
+  ConversationHistoryTurn,
   DocumentSummary,
   GraphResponse,
   QAResponse,
@@ -43,10 +44,14 @@ export function loadGraph(documentId: string | null): Promise<GraphResponse> {
   return request(`/api/graph${query}`)
 }
 
-export function askQuestion(question: string, mode: RetrievalMode): Promise<QAResponse> {
+export function askQuestion(
+  question: string,
+  mode: RetrievalMode,
+  history: ConversationHistoryTurn[] = [],
+): Promise<QAResponse> {
   return request('/api/qa', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question, mode }),
+    body: JSON.stringify({ question, mode, history }),
   })
 }
