@@ -8,12 +8,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from neo4j.exceptions import Neo4jError
 
 from app.api.documents import create_documents_router
+from app.api.graph import create_graph_router
+from app.api.qa import create_qa_router
 from app.config import Settings
 from app.database import Neo4jStore
 from app.embedding import SentenceTransformerEmbedder
 from app.extraction import GraphExtractor
 from app.ingestion import DocumentService
 from app.llm import OpenAIChatModel, UnavailableChatModel
+from app.qa import QAService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,10 +25,11 @@ def create_app(
     store: Any | None = None,
     settings: Settings | None = None,
     document_service: DocumentService | None = None,
+    qa_service: QAService | None = None,
 ) -> FastAPI:
     app_settings = settings or Settings()
     app_store = store or Neo4jStore(app_settings)
-    if document_service is None:
+    if document_service is None or qa_service is None:
         chat_model = (
             OpenAIChatModel(
                 app_settings.llm_model,
@@ -35,12 +39,16 @@ def create_app(
             if app_settings.llm_configured
             else UnavailableChatModel()
         )
-        document_service = DocumentService(
-            app_store,
-            SentenceTransformerEmbedder(app_settings.embedding_model),
-            GraphExtractor(chat_model),
-            app_settings.uploads_dir,
-        )
+        embedder = SentenceTransformerEmbedder(app_settings.embedding_model)
+        if document_service is None:
+            document_service = DocumentService(
+                app_store,
+                embedder,
+                GraphExtractor(chat_model),
+                app_settings.uploads_dir,
+            )
+        if qa_service is None:
+            qa_service = QAService(app_store, embedder, chat_model)
 
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
@@ -60,6 +68,7 @@ def create_app(
     application.state.settings = app_settings
     application.state.store = app_store
     application.state.document_service = document_service
+    application.state.qa_service = qa_service
     application.state.initialization_error = None
     application.add_middleware(
         CORSMiddleware,
@@ -80,6 +89,8 @@ def create_app(
         }
 
     application.include_router(create_documents_router(document_service, app_store))
+    application.include_router(create_graph_router(app_store))
+    application.include_router(create_qa_router(qa_service))
     return application
 
 

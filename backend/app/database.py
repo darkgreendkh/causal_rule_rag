@@ -4,7 +4,19 @@ from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError
 
 from app.config import Settings
-from app.models import ChunkRecord, ChunkView, DocumentRecord, DocumentStatus, Triple
+from app.models import (
+    ChunkRecord,
+    ChunkView,
+    DocumentRecord,
+    DocumentStatus,
+    GraphEdge,
+    GraphNode,
+    GraphPath,
+    GraphResponse,
+    Source,
+    SourceChannel,
+    Triple,
+)
 
 CONSTRAINTS_AND_INDEXES = [
     "CREATE CONSTRAINT document_id IF NOT EXISTS FOR (d:Document) REQUIRE d.id IS UNIQUE",
@@ -37,6 +49,7 @@ class Neo4jStore:
     def initialize(self) -> None:
         for statement in CONSTRAINTS_AND_INDEXES:
             self._driver.execute_query(statement)
+        self._driver.execute_query("CALL db.awaitIndexes(30)")
         records, _, _ = self._driver.execute_query(
             """MATCH (d:Document)
                WHERE d.status IN $statuses
@@ -180,6 +193,166 @@ class Neo4jStore:
             document_id=document_id,
         )
         return [ChunkView.model_validate(dict(record["c"])) for record in records]
+
+    def vector_search(self, embedding: list[float], limit: int) -> list[Source]:
+        records, _, _ = self._driver.execute_query(
+            """CALL db.index.vector.queryNodes(
+                 'chunk_embedding', $candidate_count, $embedding
+               ) YIELD node AS chunk, score
+               MATCH (document:Document {status: 'COMPLETED'})-[:HAS_CHUNK]->(chunk)
+               RETURN chunk.id AS chunk_id,
+                      document.id AS document_id,
+                      document.filename AS filename,
+                      chunk.index AS chunk_index,
+                      chunk.text AS text,
+                      chunk.heading AS heading,
+                      chunk.article_no AS article_no,
+                      score
+               ORDER BY score DESC
+               LIMIT $limit""",
+            embedding=embedding,
+            candidate_count=max(limit * 4, limit),
+            limit=limit,
+        )
+        return [
+            Source(
+                chunk_id=record["chunk_id"],
+                document_id=record["document_id"],
+                filename=record["filename"],
+                chunk_index=record["chunk_index"],
+                text=record["text"],
+                heading=record["heading"],
+                article_no=record["article_no"],
+                score=record["score"],
+                channel=SourceChannel.VECTOR,
+            )
+            for record in records
+        ]
+
+    def graph_expand(
+        self, seeds: list[Source], limit: int
+    ) -> tuple[list[Source], list[GraphPath]]:
+        if not seeds:
+            return [], []
+        seed_rows = [
+            {"chunk_id": source.chunk_id, "score": source.score or 0.0} for source in seeds
+        ]
+        seed_ids = [source.chunk_id for source in seeds]
+        records, _, _ = self._driver.execute_query(
+            """UNWIND $seeds AS seed
+               MATCH (seed_chunk:Chunk {id: seed.chunk_id})-[:MENTIONS]->(seed_entity:Entity)
+               MATCH (seed_entity)-[relation:RELATES_TO]-(related:Entity)
+               MATCH (candidate:Chunk)-[:MENTIONS]->(related)
+               MATCH (document:Document {status: 'COMPLETED'})-[:HAS_CHUNK]->(candidate)
+               WHERE NOT candidate.id IN $seed_ids
+               WITH candidate,
+                    document,
+                    count(DISTINCT relation) AS path_count,
+                    max(seed.score) AS score,
+                    collect(DISTINCT {
+                      subject: startNode(relation).name,
+                      predicate: relation.predicate,
+                      object: endNode(relation).name,
+                      source_chunk_id: relation.source_chunk_id
+                    }) AS paths
+               ORDER BY path_count DESC, score DESC, candidate.index
+               LIMIT $limit
+               RETURN candidate.id AS chunk_id,
+                      document.id AS document_id,
+                      document.filename AS filename,
+                      candidate.index AS chunk_index,
+                      candidate.text AS text,
+                      candidate.heading AS heading,
+                      candidate.article_no AS article_no,
+                      score,
+                      paths""",
+            seeds=seed_rows,
+            seed_ids=seed_ids,
+            limit=limit,
+        )
+        sources = [
+            Source(
+                chunk_id=record["chunk_id"],
+                document_id=record["document_id"],
+                filename=record["filename"],
+                chunk_index=record["chunk_index"],
+                text=record["text"],
+                heading=record["heading"],
+                article_no=record["article_no"],
+                score=record["score"],
+                channel=SourceChannel.GRAPH,
+            )
+            for record in records
+        ]
+        paths: list[GraphPath] = []
+        seen_paths: set[tuple[str, str, str, str]] = set()
+        for record in records:
+            for path in record["paths"]:
+                key = (
+                    path["subject"],
+                    path["predicate"],
+                    path["object"],
+                    path["source_chunk_id"],
+                )
+                if key in seen_paths:
+                    continue
+                seen_paths.add(key)
+                paths.append(GraphPath(**path))
+        return sources, paths
+
+    def get_graph(self, document_id: str | None, limit: int) -> GraphResponse:
+        records, _, _ = self._driver.execute_query(
+            """MATCH (document:Document {status: 'COMPLETED'})-[:HAS_CHUNK]
+                     ->(chunk:Chunk)-[:MENTIONS]->(entity:Entity)
+               WHERE $document_id IS NULL OR document.id = $document_id
+               RETURN entity, collect(DISTINCT chunk.id) AS source_chunk_ids
+               ORDER BY entity.name
+               LIMIT $fetch_limit""",
+            document_id=document_id,
+            fetch_limit=limit + 1,
+        )
+        truncated = len(records) > limit
+        visible_records = records[:limit]
+        nodes = [
+            GraphNode(
+                id=record["entity"]["key"],
+                label=record["entity"]["name"],
+                type=record["entity"]["type"],
+                source_chunk_ids=record["source_chunk_ids"],
+            )
+            for record in visible_records
+        ]
+        entity_keys = [node.id for node in nodes]
+        if not entity_keys:
+            return GraphResponse(nodes=[], edges=[], truncated=truncated)
+
+        edge_records, _, _ = self._driver.execute_query(
+            """MATCH (subject:Entity)-[relation:RELATES_TO]->(object:Entity)
+               WHERE subject.key IN $entity_keys
+                 AND object.key IN $entity_keys
+                 AND ($document_prefix IS NULL
+                   OR relation.source_chunk_id STARTS WITH $document_prefix)
+               RETURN subject.key AS source,
+                      object.key AS target,
+                      relation.predicate AS predicate,
+                      relation.source_chunk_id AS source_chunk_id""",
+            entity_keys=entity_keys,
+            document_prefix=f"{document_id}:" if document_id else None,
+        )
+        edges = [
+            GraphEdge(
+                id=(
+                    f"{record['source']}|{record['predicate']}|"
+                    f"{record['target']}|{record['source_chunk_id']}"
+                ),
+                source=record["source"],
+                target=record["target"],
+                predicate=record["predicate"],
+                source_chunk_id=record["source_chunk_id"],
+            )
+            for record in edge_records
+        ]
+        return GraphResponse(nodes=nodes, edges=edges, truncated=truncated)
 
     def cleanup_derived(self, document_id: str) -> None:
         records, _, _ = self._driver.execute_query(

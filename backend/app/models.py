@@ -1,7 +1,8 @@
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 
 class EntityType(StrEnum):
@@ -25,6 +26,16 @@ class DocumentStatus(StrEnum):
     EXTRACTING_GRAPH = "EXTRACTING_GRAPH"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+
+
+class RetrievalMode(StrEnum):
+    VECTOR = "vector"
+    HYBRID = "hybrid"
+
+
+class SourceChannel(StrEnum):
+    VECTOR = "vector"
+    GRAPH = "graph"
 
 
 class DocumentRecord(BaseModel):
@@ -71,6 +82,58 @@ class ChunkView(BaseModel):
     text: str
     heading: str | None
     article_no: str | None
+
+
+class Source(BaseModel):
+    chunk_id: str
+    document_id: str
+    filename: str
+    chunk_index: int
+    text: str
+    heading: str | None = None
+    article_no: str | None = None
+    score: float | None = None
+    channel: SourceChannel
+
+
+class GraphPath(BaseModel):
+    subject: str
+    predicate: str
+    object: str
+    source_chunk_id: str
+
+
+class QAResponse(BaseModel):
+    answer: str
+    mode: RetrievalMode
+    sources: list[Source]
+    graph_paths: list[GraphPath]
+
+
+class QARequest(BaseModel):
+    question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+    mode: RetrievalMode
+
+
+class GraphNode(BaseModel):
+    id: str
+    label: str
+    type: str
+    source_chunk_ids: list[str]
+
+
+class GraphEdge(BaseModel):
+    id: str
+    source: str
+    target: str
+    predicate: str
+    source_chunk_id: str
+
+
+class GraphResponse(BaseModel):
+    nodes: list[GraphNode]
+    edges: list[GraphEdge]
+    truncated: bool
 
 
 class Triple(BaseModel):
