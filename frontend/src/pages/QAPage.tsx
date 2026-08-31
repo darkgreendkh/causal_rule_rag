@@ -30,6 +30,7 @@ export default function QAPage() {
   const [mode, setMode] = useState<RetrievalMode>('hybrid')
   const [turns, setTurns] = useState<ConversationItem[]>(loadConversation)
   const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null)
+  const [pendingQuestion, setPendingQuestion] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -69,6 +70,8 @@ export default function QAPage() {
       question: turn.question,
       answer: turn.result.answer,
     }))
+    setPendingQuestion(normalized)
+    setQuestion('')
     setLoading(true)
     setError('')
     try {
@@ -81,8 +84,10 @@ export default function QAPage() {
       }
       setTurns((current) => [...current, item].slice(-MAX_STORED_TURNS))
       setSelectedTurnId(item.id)
-      setQuestion('')
+      setPendingQuestion('')
     } catch (requestError) {
+      setPendingQuestion('')
+      setQuestion((current) => current || normalized)
       setError(requestError instanceof Error ? requestError.message : '问答请求失败')
     } finally {
       setLoading(false)
@@ -150,10 +155,18 @@ export default function QAPage() {
               ))
             )}
 
-            {loading && (
-              <div className="assistant-message-row loading-message">
-                <div className="message-avatar bot-avatar"><Bot size={17} /></div>
-                <div><i /><i /><i /><span>正在检索证据并生成回答</span></div>
+            {pendingQuestion && (
+              <div className="conversation-turn">
+                <div className="user-message-row">
+                  <div className="message-avatar user-avatar"><User size={16} /></div>
+                  <div className="user-message">
+                    <p>{pendingQuestion}</p>
+                  </div>
+                </div>
+                <div className="assistant-message-row loading-message">
+                  <div className="message-avatar bot-avatar"><Bot size={17} /></div>
+                  <div><i /><i /><i /><span>正在检索证据并生成回答</span></div>
+                </div>
               </div>
             )}
           </div>
