@@ -35,11 +35,17 @@ button {
 .brand {
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 0;
   border: 0;
   text-align: left;
   background: transparent;
   cursor: pointer;
+}
+
+.brand > svg {
+  flex: 0 0 auto;
+  color: #255d45;
 }
 
 .brand div {
@@ -434,6 +440,11 @@ pre {
   padding: 40px 0 56px;
 }
 
+.qa-content-shell {
+  width: min(1680px, calc(100% - 32px));
+  padding: 20px 0 32px;
+}
+
 .primary-button {
   display: inline-flex;
   align-items: center;
@@ -636,6 +647,7 @@ textarea:focus-visible {
     margin-inline: 0;
   }
 
+  .app-sidebar .brand div,
   .app-sidebar nav button span,
   .sidebar-note span {
     display: none;
@@ -733,15 +745,15 @@ textarea:focus-visible {
 
 .qa-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 370px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 18px;
   align-items: start;
 }
 
 .conversation-panel {
   display: flex;
+  height: min(780px, calc(100vh - 72px));
   min-height: 720px;
-  max-height: calc(100vh - 150px);
   flex-direction: column;
   overflow: hidden;
 }
@@ -1488,9 +1500,14 @@ textarea:focus-visible {
   gap: 6px;
 }
 
-.graph-toolbar-actions {
+.graph-toolbar-actions,
+.graph-export-controls {
   display: flex;
   align-items: center;
+  gap: 6px;
+}
+
+.graph-toolbar-actions {
   justify-content: flex-end;
   gap: 12px;
 }
@@ -1507,6 +1524,28 @@ textarea:focus-visible {
   cursor: pointer;
 }
 
+.graph-export-controls button {
+  display: inline-flex;
+  height: 42px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid #cdd8d1;
+  border-radius: 9px;
+  color: #3f5d4e;
+  background: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.graph-controls button:hover,
+.graph-export-controls button:hover:not(:disabled) {
+  border-color: #8eb09c;
+  color: #215f42;
+  background: #f4f8f5;
+}
+
 .graph-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -1516,10 +1555,12 @@ textarea:focus-visible {
 
 .graph-canvas-wrap {
   min-height: 680px;
+  background: #fff;
 }
 
 .graph-canvas {
   height: 680px;
+  background: #fff;
 }
 
 .graph-legend {
@@ -1580,6 +1621,16 @@ textarea:focus-visible {
 }
 
 @media (max-width: 1180px) {
+  .graph-toolbar {
+    grid-template-columns: 260px minmax(280px, 1fr);
+  }
+
+  .graph-toolbar-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
   .document-workspace {
     grid-template-columns: 1fr;
   }

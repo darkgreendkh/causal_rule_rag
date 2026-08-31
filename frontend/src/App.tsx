@@ -4,6 +4,7 @@ import {
   MessageCircleQuestion,
   Network,
   Scale,
+  ShieldCheck,
   type LucideIcon,
 } from 'lucide-react'
 import { lazy, Suspense, useState } from 'react'
@@ -61,7 +62,7 @@ export default function App() {
         <header className="mobile-header">
           <Brand onClick={() => navigate('overview')} />
         </header>
-        <main className="content-shell">
+        <main className={page === 'qa' ? 'content-shell qa-content-shell' : 'content-shell'}>
           {page === 'overview' && <OverviewPage onNavigate={navigate} />}
           {page === 'documents' && <DocumentsPage />}
           {page === 'graph' && (
@@ -79,6 +80,7 @@ export default function App() {
 function Brand({ onClick }: { onClick: () => void }) {
   return (
     <button className="brand" type="button" onClick={onClick} aria-label="返回概览">
+      <ShieldCheck aria-hidden="true" size={24} strokeWidth={1.8} />
       <div>
         <strong>智能审批系统</strong>
       </div>

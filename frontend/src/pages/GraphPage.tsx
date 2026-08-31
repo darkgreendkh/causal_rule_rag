@@ -1,8 +1,10 @@
 import cytoscape, { type Core, type ElementDefinition } from 'cytoscape'
-import { Maximize2, Network, Search, ZoomIn, ZoomOut } from 'lucide-react'
+import { Download, Maximize2, Network, Search, ZoomIn, ZoomOut } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { listDocuments, loadGraph } from '../api'
+import { buildGraphExport, serializeGraphMl, truncateGraphLabel } from '../graphExport'
+import { groupSourceChunks } from '../sourceChunks'
 import type { DocumentSummary, GraphEdge, GraphNode, GraphResponse } from '../types'
 
 type SelectedElement =
@@ -11,17 +13,17 @@ type SelectedElement =
   | null
 
 const ENTITY_COLORS: Record<string, string> = {
-  LAW: '#2f7657',
-  ARTICLE: '#4379a3',
-  AGENCY: '#9b6b45',
-  PERSON_ROLE: '#6a72a8',
-  ORGANIZATION: '#40848a',
-  LEGAL_CONCEPT: '#7463a3',
-  ACTION: '#9a675d',
-  RIGHT: '#4b8a68',
-  OBLIGATION: '#a47b3c',
-  PENALTY: '#a25151',
-  OTHER: '#68766e',
+  LAW: '#245c43',
+  ARTICLE: '#356b91',
+  AGENCY: '#815435',
+  PERSON_ROLE: '#565f91',
+  ORGANIZATION: '#287379',
+  LEGAL_CONCEPT: '#655293',
+  ACTION: '#865149',
+  RIGHT: '#327550',
+  OBLIGATION: '#8d6729',
+  PENALTY: '#913f3f',
+  OTHER: '#56645d',
 }
 
 export default function GraphPage() {
@@ -77,6 +79,13 @@ export default function GraphPage() {
     [visibleGraph.nodes],
   )
 
+  const sourceChunkGroups = useMemo(
+    () => selected?.kind === 'node'
+      ? groupSourceChunks(selected.value.source_chunk_ids, documents)
+      : [],
+    [documents, selected],
+  )
+
   useEffect(() => {
     if (!containerRef.current) return
     graphRef.current?.destroy()
@@ -87,6 +96,7 @@ export default function GraphPage() {
         data: {
           id: node.id,
           label: node.label,
+          displayLabel: truncateGraphLabel(node.label),
           type: node.type,
           color: ENTITY_COLORS[node.type] ?? ENTITY_COLORS.OTHER,
         },
@@ -105,58 +115,120 @@ export default function GraphPage() {
     const instance = cytoscape({
       container: containerRef.current,
       elements,
-      layout: { name: 'cose', animate: false, fit: true, padding: 54 },
-      minZoom: 0.25,
+      layout: {
+        name: 'cose',
+        animate: false,
+        fit: true,
+        padding: 64,
+        nodeOverlap: 20,
+        idealEdgeLength: 110,
+        componentSpacing: 100,
+      },
+      selectionType: 'single',
+      minZoom: 0.1,
       maxZoom: 3,
       style: [
         {
           selector: 'node',
           style: {
-            label: 'data(label)',
+            label: 'data(displayLabel)',
             'background-color': 'data(color)',
-            color: '#24362c',
-            'font-size': 11,
-            'text-valign': 'bottom',
-            'text-margin-y': 8,
-            width: 34,
-            height: 34,
-            'border-width': 5,
-            'border-color': '#e3ece6',
+            color: '#ffffff',
+            'font-size': 10,
+            'font-weight': 600,
+            'text-halign': 'center',
+            'text-valign': 'center',
+            'text-justification': 'center',
+            'text-wrap': 'wrap',
+            'text-max-width': '52px',
+            'text-overflow-wrap': 'anywhere',
+            width: 68,
+            height: 68,
+            'border-width': 3,
+            'border-color': '#ffffff',
+            'overlay-opacity': 0,
           },
         },
         {
           selector: 'edge',
           style: {
-            label: 'data(label)',
-            width: 1.4,
-            'line-color': '#b7c4bc',
-            'target-arrow-color': '#b7c4bc',
+            label: '',
+            width: 1.5,
+            'line-color': '#c7d0ca',
+            'target-arrow-color': '#aebbb3',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
             'font-size': 9,
-            color: '#67756d',
-            'text-background-color': '#f8faf8',
+            color: '#526159',
+            'text-background-color': '#ffffff',
             'text-background-opacity': 1,
-            'text-background-padding': '3px',
+            'text-background-padding': '4px',
+            'text-background-shape': 'roundrectangle',
+            'arrow-scale': 0.85,
+            'overlay-opacity': 0,
           },
         },
         {
-          selector: ':selected',
-          style: { 'border-color': '#d39f45', 'line-color': '#d39f45' },
+          selector: 'edge.relation-visible, edge.relation-hovered, edge:selected',
+          style: {
+            label: 'data(label)',
+            width: 2.2,
+            'line-color': '#718b7c',
+            'target-arrow-color': '#718b7c',
+          },
+        },
+        {
+          selector: 'node:selected',
+          style: {
+            'border-width': 5,
+            'border-color': 'data(color)',
+            'underlay-color': 'data(color)',
+            'underlay-opacity': 0.16,
+            'underlay-padding': 8,
+            'underlay-shape': 'ellipse',
+          },
+        },
+        {
+          selector: 'edge:selected',
+          style: {
+            'line-color': '#d39f45',
+            'target-arrow-color': '#d39f45',
+          },
+        },
+        {
+          selector: 'node.is-dimmed, edge.is-dimmed',
+          style: { opacity: 0.14 },
         },
       ],
     })
 
+    const clearFocus = () => {
+      instance.elements().removeClass('is-dimmed relation-visible')
+    }
+
     instance.on('tap', 'node', (event) => {
+      clearFocus()
+      const neighborhood = event.target.closedNeighborhood()
+      instance.elements().difference(neighborhood).addClass('is-dimmed')
+      neighborhood.edges().addClass('relation-visible')
       const value = visibleGraph.nodes.find((node) => node.id === event.target.id())
       if (value) setSelected({ kind: 'node', value })
     })
     instance.on('tap', 'edge', (event) => {
+      clearFocus()
+      const focus = event.target.connectedNodes().union(event.target)
+      instance.elements().difference(focus).addClass('is-dimmed')
+      event.target.addClass('relation-visible')
       const value = visibleGraph.edges.find((edge) => edge.id === event.target.id())
       if (value) setSelected({ kind: 'edge', value })
     })
+    instance.on('mouseover', 'edge', (event) => event.target.addClass('relation-hovered'))
+    instance.on('mouseout', 'edge', (event) => event.target.removeClass('relation-hovered'))
     instance.on('tap', (event) => {
-      if (event.target === instance) setSelected(null)
+      if (event.target === instance) {
+        clearFocus()
+        setSelected(null)
+      }
     })
     graphRef.current = instance
 
@@ -172,6 +244,43 @@ export default function GraphPage() {
     instance.zoom(instance.zoom() * factor)
     instance.center()
   }
+
+  function exportTimestamp() {
+    return new Date().toISOString().replaceAll('-', '').replaceAll(':', '').replace('T', '-').slice(0, 15)
+  }
+
+  function downloadBlob(blob: Blob, extension: string) {
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `knowledge-graph-${exportTimestamp()}.${extension}`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function getExportData() {
+    const positions = new Map(
+      graphRef.current!.nodes().map((node) => [node.id(), node.position()] as const),
+    )
+    return buildGraphExport(visibleGraph, positions, ENTITY_COLORS, ENTITY_COLORS.OTHER)
+  }
+
+  function exportPng() {
+    const blob = graphRef.current!.png({ output: 'blob', bg: '#ffffff', full: false, scale: 2 })
+    downloadBlob(blob, 'png')
+  }
+
+  function exportJson() {
+    const blob = new Blob([JSON.stringify(getExportData(), null, 2)], { type: 'application/json' })
+    downloadBlob(blob, 'json')
+  }
+
+  function exportGraphMl() {
+    const blob = new Blob([serializeGraphMl(getExportData())], { type: 'application/graphml+xml' })
+    downloadBlob(blob, 'graphml')
+  }
+
+  const exportDisabled = loading || visibleGraph.nodes.length === 0
 
   return (
     <section className="graph-page">
@@ -200,10 +309,21 @@ export default function GraphPage() {
             <span><strong>{visibleGraph.nodes.length}</strong> 个实体</span>
             <span><strong>{visibleGraph.edges.length}</strong> 条关系</span>
           </div>
+          <div className="graph-export-controls" aria-label="图谱导出控制">
+            <button type="button" disabled={exportDisabled} onClick={exportPng} title="导出当前画面为 PNG">
+              <Download size={15} /> PNG
+            </button>
+            <button type="button" disabled={exportDisabled} onClick={exportJson} title="导出当前筛选结果为 JSON">
+              <Download size={15} /> JSON
+            </button>
+            <button type="button" disabled={exportDisabled} onClick={exportGraphMl} title="导出当前筛选结果为 GraphML">
+              <Download size={15} /> GraphML
+            </button>
+          </div>
           <div className="graph-controls" aria-label="图谱缩放控制">
             <button type="button" aria-label="放大图谱" onClick={() => zoomBy(1.2)}><ZoomIn size={17} /></button>
             <button type="button" aria-label="缩小图谱" onClick={() => zoomBy(0.8)}><ZoomOut size={17} /></button>
-            <button type="button" aria-label="复位图谱" onClick={() => graphRef.current?.fit(undefined, 54)}><Maximize2 size={17} /></button>
+            <button type="button" aria-label="复位图谱" onClick={() => graphRef.current?.fit(undefined, 64)}><Maximize2 size={17} /></button>
           </div>
         </div>
       </div>
@@ -237,9 +357,13 @@ export default function GraphPage() {
             <>
               <span className="type-pill">{selected.value.type}</span>
               <h2>{selected.value.label}</h2>
-              <p className="detail-label">来源分块</p>
+              <p className="detail-label">来源依据</p>
               <ul className="source-id-list">
-                {selected.value.source_chunk_ids.map((id) => <li key={id}>{id}</li>)}
+                {sourceChunkGroups.map((group) => (
+                  <li key={group.documentId}>
+                    {group.filename} · 分块 {group.chunkIndexes.join('、')}
+                  </li>
+                ))}
               </ul>
             </>
           ) : (
