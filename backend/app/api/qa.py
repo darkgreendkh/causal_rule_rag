@@ -10,7 +10,7 @@ def create_qa_router(service: QAService) -> APIRouter:
     @router.post("/qa", response_model=QAResponse)
     def answer_question(request: QARequest) -> QAResponse:
         try:
-            return service.answer(request.question, request.mode)
+            return service.answer(request.question, request.mode, request.history)
         except Exception as error:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,

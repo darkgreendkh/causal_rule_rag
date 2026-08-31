@@ -55,15 +55,20 @@ class NoopDocumentService:
 
 
 class StaticQAService:
-    def answer(self, question: str, mode: RetrievalMode) -> QAResponse:
+    def __init__(self) -> None:
+        self.history = []
+
+    def answer(self, question: str, mode: RetrievalMode, history: list) -> QAResponse:
+        self.history = history
         return QAResponse(answer="回答 [S1]", mode=mode, sources=[], graph_paths=[])
 
 
 def test_qa_api_validates_request_and_returns_selected_mode() -> None:
+    qa_service = StaticQAService()
     app = create_app(
         store=APIStore(),
         document_service=NoopDocumentService(),
-        qa_service=StaticQAService(),
+        qa_service=qa_service,
     )
 
     with TestClient(app) as client:
@@ -72,7 +77,32 @@ def test_qa_api_validates_request_and_returns_selected_mode() -> None:
 
     assert response.status_code == 200
     assert response.json()["mode"] == "hybrid"
+    assert qa_service.history == []
     assert empty.status_code == 422
+
+
+def test_qa_api_accepts_at_most_three_history_turns() -> None:
+    qa_service = StaticQAService()
+    app = create_app(
+        store=APIStore(),
+        document_service=NoopDocumentService(),
+        qa_service=qa_service,
+    )
+    turn = {"question": "上一问", "answer": "上一答 [S1]"}
+
+    with TestClient(app) as client:
+        accepted = client.post(
+            "/api/qa",
+            json={"question": "继续追问", "mode": "hybrid", "history": [turn] * 3},
+        )
+        rejected = client.post(
+            "/api/qa",
+            json={"question": "继续追问", "mode": "hybrid", "history": [turn] * 4},
+        )
+
+    assert accepted.status_code == 200
+    assert len(qa_service.history) == 3
+    assert rejected.status_code == 422
 
 
 def test_graph_api_returns_cytoscape_ready_nodes_and_edges() -> None:

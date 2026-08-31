@@ -110,9 +110,19 @@ class QAResponse(BaseModel):
     graph_paths: list[GraphPath]
 
 
+class ConversationTurn(BaseModel):
+    question: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)
+    ]
+    answer: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=12000)
+    ]
+
+
 class QARequest(BaseModel):
     question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
     mode: RetrievalMode
+    history: list[ConversationTurn] = Field(default_factory=list, max_length=3)
 
 
 class GraphNode(BaseModel):
