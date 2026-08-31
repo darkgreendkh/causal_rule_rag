@@ -95,23 +95,15 @@ export default function QAPage() {
 
   return (
     <section className="qa-page">
-      <div className="page-title qa-page-title">
-        <div>
-          <p className="section-kicker">CONTEXTUAL LEGAL QA</p>
-          <h1>法规问答</h1>
-          <p>连续追问法规问题，每轮回答都保留独立证据。</p>
-        </div>
-        <button className="secondary-button" type="button" onClick={startNewConversation}>
-          <Plus size={17} />
-          新对话
-        </button>
-      </div>
-
       <div className="qa-workspace">
         <div className="panel conversation-panel">
           <div className="conversation-status">
             <span><i /> 法规问答助手</span>
             <small>当前会话保存在本地浏览器</small>
+            <button className="secondary-button" type="button" onClick={startNewConversation}>
+              <Plus size={17} />
+              新对话
+            </button>
           </div>
 
           <div className="message-list" ref={messageListRef} aria-live="polite">
@@ -206,10 +198,7 @@ export default function QAPage() {
 
         <aside className="panel conversation-evidence">
           <div className="section-heading">
-            <div>
-              <p className="section-kicker">CURRENT EVIDENCE</p>
-              <h2>本轮证据</h2>
-            </div>
+            <h2>本轮证据</h2>
             {selectedTurn && <span className="count-pill">{selectedTurn.result.sources.length}</span>}
           </div>
           {!selectedTurn ? (

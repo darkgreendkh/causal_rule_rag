@@ -59,7 +59,7 @@ export default function App() {
 
       <div className="app-workspace">
         <header className="mobile-header">
-          <Brand onClick={() => navigate('overview')} compact />
+          <Brand onClick={() => navigate('overview')} />
         </header>
         <main className="content-shell">
           {page === 'overview' && <OverviewPage onNavigate={navigate} />}
@@ -76,13 +76,11 @@ export default function App() {
   )
 }
 
-function Brand({ onClick, compact = false }: { onClick: () => void; compact?: boolean }) {
+function Brand({ onClick }: { onClick: () => void }) {
   return (
     <button className="brand" type="button" onClick={onClick} aria-label="返回概览">
-      <span>CR</span>
       <div>
-        <strong>法规知识图谱 RAG</strong>
-        {!compact && <small>CAUSAL RULE RESEARCH SYSTEM</small>}
+        <strong>智能审批系统</strong>
       </div>
     </button>
   )

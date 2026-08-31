@@ -35,24 +35,11 @@ button {
 .brand {
   display: flex;
   align-items: center;
-  gap: 13px;
   padding: 0;
   border: 0;
   text-align: left;
   background: transparent;
   cursor: pointer;
-}
-
-.brand > span {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 13px;
-  color: #f3f7f4;
-  background: #255d45;
-  font-family: Georgia, serif;
-  font-weight: 700;
 }
 
 .brand div {
@@ -62,12 +49,6 @@ button {
 
 .brand strong {
   font-size: 16px;
-}
-
-.brand small {
-  color: #75827b;
-  font-size: 9px;
-  letter-spacing: 0.12em;
 }
 
 h2,
@@ -97,14 +78,6 @@ h3 {
   min-height: 260px;
   padding: 32px;
   color: #69766f;
-}
-
-.section-kicker {
-  margin-bottom: 7px;
-  color: #3e7659;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 0.14em;
 }
 
 .muted {
@@ -461,27 +434,6 @@ pre {
   padding: 40px 0 56px;
 }
 
-.page-title {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 28px;
-}
-
-.page-title h1 {
-  margin: 0 0 8px;
-  color: #18251e;
-  font-family: Georgia, "Noto Serif SC", serif;
-  font-size: clamp(28px, 3vw, 38px);
-  line-height: 1.15;
-}
-
-.page-title p:last-child {
-  margin-bottom: 0;
-  color: #69766f;
-}
-
 .primary-button {
   display: inline-flex;
   align-items: center;
@@ -684,10 +636,15 @@ textarea:focus-visible {
     margin-inline: 0;
   }
 
-  .app-sidebar .brand div,
   .app-sidebar nav button span,
   .sidebar-note span {
     display: none;
+  }
+
+  .app-sidebar .brand strong {
+    font-size: 13px;
+    line-height: 1.35;
+    text-align: center;
   }
 
   .app-sidebar nav button {
@@ -724,8 +681,9 @@ textarea:focus-visible {
     display: grid;
   }
 
-  .app-sidebar .brand small {
-    display: none;
+  .app-sidebar .brand strong {
+    font-size: 16px;
+    text-align: left;
   }
 
   .app-sidebar nav {
@@ -751,15 +709,6 @@ textarea:focus-visible {
     padding: 24px 14px 40px;
   }
 
-  .page-title {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .page-title .primary-button {
-    align-self: flex-start;
-  }
-
   .stat-grid,
   .quick-action-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -780,10 +729,6 @@ textarea:focus-visible {
   background: #fff;
   font-weight: 650;
   cursor: pointer;
-}
-
-.qa-page-title {
-  margin-bottom: 20px;
 }
 
 .qa-workspace {
@@ -1158,14 +1103,6 @@ textarea:focus-visible {
 }
 
 @media (max-width: 820px) {
-  .qa-page-title {
-    align-items: stretch;
-  }
-
-  .qa-page-title .secondary-button {
-    align-self: flex-start;
-  }
-
   .conversation-status {
     align-items: flex-start;
     flex-direction: column;
@@ -1509,10 +1446,6 @@ textarea:focus-visible {
 }
 
 /* Graph workspace */
-.graph-page-title {
-  margin-bottom: 20px;
-}
-
 .graph-summary {
   display: flex;
   gap: 8px;
@@ -1553,6 +1486,13 @@ textarea:focus-visible {
 .graph-controls {
   display: flex;
   gap: 6px;
+}
+
+.graph-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .graph-controls button {
@@ -1659,8 +1599,7 @@ textarea:focus-visible {
 }
 
 @media (max-width: 820px) {
-  .compact-upload,
-  .graph-page-title {
+  .compact-upload {
     align-items: stretch;
     flex-direction: column;
   }
@@ -1672,6 +1611,11 @@ textarea:focus-visible {
   .document-toolbar,
   .graph-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .graph-toolbar-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .document-table-head {

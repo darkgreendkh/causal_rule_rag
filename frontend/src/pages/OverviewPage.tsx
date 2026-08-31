@@ -5,7 +5,6 @@ import {
   Files,
   MessageCircleQuestion,
   Network,
-  Upload,
   type LucideIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -47,18 +46,6 @@ export default function OverviewPage({ onNavigate }: { onNavigate: (page: Page) 
 
   return (
     <section className="overview-page">
-      <div className="page-title">
-        <div>
-          <p className="section-kicker">RESEARCH WORKSPACE</p>
-          <h1>欢迎回来</h1>
-          <p>快速管理法规文档、检视知识图谱并开始证据问答。</p>
-        </div>
-        <button className="primary-button" type="button" onClick={() => onNavigate('documents')}>
-          <Upload size={17} />
-          上传文档
-        </button>
-      </div>
-
       {error && <p className="error-banner">{error}</p>}
 
       <div className="stat-grid" aria-live="polite">
@@ -76,10 +63,7 @@ export default function OverviewPage({ onNavigate }: { onNavigate: (page: Page) 
       <div className="overview-grid">
         <div>
           <div className="section-heading">
-            <div>
-              <p className="section-kicker">QUICK START</p>
-              <h2>快速开始</h2>
-            </div>
+            <h2>快速开始</h2>
           </div>
           <div className="quick-action-grid">
             <QuickAction
@@ -105,10 +89,7 @@ export default function OverviewPage({ onNavigate }: { onNavigate: (page: Page) 
 
         <aside className="panel recent-panel">
           <div className="section-heading">
-            <div>
-              <p className="section-kicker">RECENT DOCUMENTS</p>
-              <h2>最近文档</h2>
-            </div>
+            <h2>最近文档</h2>
             <button className="text-button" type="button" onClick={() => onNavigate('documents')}>
               查看全部
               <ArrowRight size={15} />

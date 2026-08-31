@@ -175,18 +175,6 @@ export default function GraphPage() {
 
   return (
     <section className="graph-page">
-      <div className="page-title graph-page-title">
-        <div>
-          <p className="section-kicker">KNOWLEDGE GRAPH</p>
-          <h1>知识图谱</h1>
-          <p>探索法规实体、关系与对应的原始证据。</p>
-        </div>
-        <div className="graph-summary">
-          <span><strong>{visibleGraph.nodes.length}</strong> 个实体</span>
-          <span><strong>{visibleGraph.edges.length}</strong> 条关系</span>
-        </div>
-      </div>
-
       <div className="panel graph-toolbar">
         <label>
           <span>文档范围</span>
@@ -207,10 +195,16 @@ export default function GraphPage() {
             onChange={(event) => setSearch(event.target.value)}
           />
         </label>
-        <div className="graph-controls" aria-label="图谱缩放控制">
-          <button type="button" aria-label="放大图谱" onClick={() => zoomBy(1.2)}><ZoomIn size={17} /></button>
-          <button type="button" aria-label="缩小图谱" onClick={() => zoomBy(0.8)}><ZoomOut size={17} /></button>
-          <button type="button" aria-label="复位图谱" onClick={() => graphRef.current?.fit(undefined, 54)}><Maximize2 size={17} /></button>
+        <div className="graph-toolbar-actions">
+          <div className="graph-summary">
+            <span><strong>{visibleGraph.nodes.length}</strong> 个实体</span>
+            <span><strong>{visibleGraph.edges.length}</strong> 条关系</span>
+          </div>
+          <div className="graph-controls" aria-label="图谱缩放控制">
+            <button type="button" aria-label="放大图谱" onClick={() => zoomBy(1.2)}><ZoomIn size={17} /></button>
+            <button type="button" aria-label="缩小图谱" onClick={() => zoomBy(0.8)}><ZoomOut size={17} /></button>
+            <button type="button" aria-label="复位图谱" onClick={() => graphRef.current?.fit(undefined, 54)}><Maximize2 size={17} /></button>
+          </div>
         </div>
       </div>
 
@@ -234,7 +228,6 @@ export default function GraphPage() {
         </div>
 
         <aside className="panel detail-panel">
-          <p className="section-kicker">ELEMENT DETAIL</p>
           {!selected ? (
             <div className="detail-empty compact">
               <Network size={28} />

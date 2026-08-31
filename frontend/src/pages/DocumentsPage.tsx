@@ -130,14 +130,6 @@ export default function DocumentsPage() {
 
   return (
     <section className="documents-page">
-      <div className="page-title">
-        <div>
-          <p className="section-kicker">DOCUMENT WORKSPACE</p>
-          <h1>文档管理</h1>
-          <p>上传法规文档，并检查处理状态和原始分块。</p>
-        </div>
-      </div>
-
       <form className="panel compact-upload" onSubmit={handleUpload}>
         <label
           className={dragging ? 'drop-zone dragging' : 'drop-zone'}
@@ -250,10 +242,7 @@ export default function DocumentsPage() {
           ) : (
             <>
               <div className="document-detail-heading">
-                <div>
-                  <p className="section-kicker">DOCUMENT DETAIL</p>
-                  <h2>{selectedDocument.filename}</h2>
-                </div>
+                <h2>{selectedDocument.filename}</h2>
                 <span className={`status status-${selectedDocument.status.toLowerCase()}`}>
                   {STATUS_LABELS[selectedDocument.status]}
                 </span>
