@@ -7,7 +7,7 @@
 
 | 层次 | 技术 | 职责 |
 | --- | --- | --- |
-| 前端 | React、TypeScript、Vite、Cytoscape.js | 文档管理、Chunk 查看、知识图谱展示和问答交互 |
+| 前端 | React、TypeScript、Vite、Cytoscape.js、Lucide | 概览、文档管理、Chunk 查看、知识图谱展示和多轮问答交互 |
 | 后端 | FastAPI、Python 3.12 | API、文档摄取、分块、图谱抽取、检索和回答生成 |
 | 文件存储 | `data/uploads/` | 保存上传的 TXT/Markdown 原文件 |
 | Embedding | 本地 BGE-M3 | 批量生成归一化的 1024 维向量 |
@@ -50,7 +50,9 @@ PENDING → PARSING → EMBEDDING → EXTRACTING_GRAPH → COMPLETED
                               LLM 回答 + [S1] 来源标记
 ```
 
-当前检索链路没有 reranker、关键词检索、多轮会话或流式输出。
+有对话历史时，前端携带最近三轮问题和回答，后端先将当前追问改写为独立检索问题，
+再进入上述检索链路。历史只帮助理解问题，本轮证据仍是回答的唯一事实依据。当前检索
+链路没有 reranker、关键词检索或流式输出。
 
 ## 后端模块
 
@@ -81,7 +83,8 @@ Browser :5173 → FastAPI :8000 → Neo4j Bolt :7687
 ```
 
 文件上传使用 `multipart/form-data`；其余写接口使用 JSON。前端每 3 秒轮询文档列表以
-更新处理状态。CORS 默认只允许 `http://localhost:5173`。
+更新处理状态。问答页把最多 20 轮完整结果保存在浏览器 localStorage，请求时只发送
+最近三轮问答文本。CORS 默认只允许 `http://localhost:5173`。
 
 ## Neo4j 数据模型
 
