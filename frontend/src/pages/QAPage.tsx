@@ -10,6 +10,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { askQuestion } from '../api'
+import { formatSourceChunk } from '../sourceChunks'
 import type { ConversationHistoryTurn, QAResponse, RetrievalMode } from '../types'
 
 const STORAGE_KEY = 'causal-rule-rag:conversation:v1'
@@ -55,6 +56,10 @@ export default function QAPage() {
     () => turns.find((turn) => turn.id === selectedTurnId) ?? turns[turns.length - 1] ?? null,
     [selectedTurnId, turns],
   )
+  const sourceDocuments = selectedTurn?.result.sources.map((source) => ({
+    id: source.document_id,
+    filename: source.filename,
+  })) ?? []
 
   async function submitQuestion(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -240,7 +245,7 @@ export default function QAPage() {
                         <span>{path.subject}</span>
                         <strong>{path.predicate}</strong>
                         <span>{path.object}</span>
-                        <small>{path.source_chunk_id}</small>
+                        <small>{formatSourceChunk(path.source_chunk_id, sourceDocuments)}</small>
                       </div>
                     ))}
                   </div>

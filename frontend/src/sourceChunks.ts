@@ -34,3 +34,11 @@ export function groupSourceChunks(
     chunkIndexes: group.chunkIndexes.sort((left, right) => left - right),
   }))
 }
+
+export function formatSourceChunk(
+  sourceChunkId: string,
+  documents: SourceDocument[],
+): string {
+  const source = groupSourceChunks([sourceChunkId], documents)[0]
+  return `${source.filename} · 分块 ${source.chunkIndexes[0]}`
+}
