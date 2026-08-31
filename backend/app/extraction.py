@@ -5,8 +5,7 @@ from pydantic import ValidationError
 from app.models import Triple, TriplePayload
 
 SYSTEM_PROMPT = """你是法律文本知识图谱抽取器。只输出 JSON，不要解释。
-输出格式：{"triples":[{"subject":"...","subject_type":"...","predicate":"...","
-object":"...","object_type":"..."}]}。
+输出格式：{"triples":[{"subject":"...","subject_type":"...","predicate":"...","object":"...","object_type":"..."}]}。
 实体类型只能是 LAW、ARTICLE、AGENCY、PERSON_ROLE、ORGANIZATION、LEGAL_CONCEPT、
 ACTION、RIGHT、OBLIGATION、PENALTY、OTHER。没有可靠关系时返回 {"triples":[]}。
 实体名应简短明确，谓词使用原文中的中文关系，禁止补充原文不存在的事实。"""

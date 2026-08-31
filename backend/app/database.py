@@ -390,7 +390,8 @@ class Neo4jStore:
     def _delete_orphan_entities(self) -> None:
         self._driver.execute_query(
             """MATCH (e:Entity)
-               WHERE NOT (:Chunk)-[:MENTIONS]->(e) AND NOT (e)-[:RELATES_TO]-()
+               WHERE NOT EXISTS { MATCH (:Chunk)-[:MENTIONS]->(e) }
+                 AND NOT EXISTS { MATCH (e)-[:RELATES_TO]-() }
                DELETE e"""
         )
 

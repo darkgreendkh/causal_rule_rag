@@ -1,8 +1,9 @@
+import json
 from collections.abc import Iterator
 
 import pytest
 
-from app.extraction import ExtractionError, GraphExtractor
+from app.extraction import SYSTEM_PROMPT, ExtractionError, GraphExtractor
 from app.models import EntityType
 
 
@@ -14,6 +15,22 @@ class StubChatModel:
     def complete(self, system_prompt: str, user_prompt: str) -> str:
         self.prompts.append(user_prompt)
         return next(self._responses)
+
+
+def test_extraction_prompt_contains_valid_json_example() -> None:
+    example = SYSTEM_PROMPT.split("输出格式：", maxsplit=1)[1].split("。\n", maxsplit=1)[0]
+
+    assert json.loads(example) == {
+        "triples": [
+            {
+                "subject": "...",
+                "subject_type": "...",
+                "predicate": "...",
+                "object": "...",
+                "object_type": "...",
+            }
+        ]
+    }
 
 
 def test_extractor_retries_invalid_json_once() -> None:
