@@ -1,4 +1,5 @@
 import cytoscape, { type Core, type ElementDefinition } from 'cytoscape'
+import { Maximize2, Network, Search, ZoomIn, ZoomOut } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { listDocuments, loadGraph } from '../api'
@@ -8,6 +9,20 @@ type SelectedElement =
   | { kind: 'node'; value: GraphNode }
   | { kind: 'edge'; value: GraphEdge }
   | null
+
+const ENTITY_COLORS: Record<string, string> = {
+  LAW: '#2f7657',
+  ARTICLE: '#4379a3',
+  AGENCY: '#9b6b45',
+  PERSON_ROLE: '#6a72a8',
+  ORGANIZATION: '#40848a',
+  LEGAL_CONCEPT: '#7463a3',
+  ACTION: '#9a675d',
+  RIGHT: '#4b8a68',
+  OBLIGATION: '#a47b3c',
+  PENALTY: '#a25151',
+  OTHER: '#68766e',
+}
 
 export default function GraphPage() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -57,6 +72,11 @@ export default function GraphPage() {
     }
   }, [graph, search])
 
+  const visibleTypes = useMemo(
+    () => [...new Set(visibleGraph.nodes.map((node) => node.type))].sort(),
+    [visibleGraph.nodes],
+  )
+
   useEffect(() => {
     if (!containerRef.current) return
     graphRef.current?.destroy()
@@ -64,7 +84,12 @@ export default function GraphPage() {
     const elements: ElementDefinition[] = [
       ...visibleGraph.nodes.map((node) => ({
         group: 'nodes' as const,
-        data: { id: node.id, label: node.label, type: node.type },
+        data: {
+          id: node.id,
+          label: node.label,
+          type: node.type,
+          color: ENTITY_COLORS[node.type] ?? ENTITY_COLORS.OTHER,
+        },
       })),
       ...visibleGraph.edges.map((edge) => ({
         group: 'edges' as const,
@@ -80,34 +105,36 @@ export default function GraphPage() {
     const instance = cytoscape({
       container: containerRef.current,
       elements,
-      layout: { name: 'cose', animate: false, fit: true, padding: 36 },
+      layout: { name: 'cose', animate: false, fit: true, padding: 54 },
+      minZoom: 0.25,
+      maxZoom: 3,
       style: [
         {
           selector: 'node',
           style: {
             label: 'data(label)',
-            'background-color': '#2f7657',
-            color: '#173226',
+            'background-color': 'data(color)',
+            color: '#24362c',
             'font-size': 11,
             'text-valign': 'bottom',
             'text-margin-y': 8,
             width: 34,
             height: 34,
             'border-width': 5,
-            'border-color': '#d9eadf',
+            'border-color': '#e3ece6',
           },
         },
         {
           selector: 'edge',
           style: {
             label: 'data(label)',
-            width: 1.5,
-            'line-color': '#afbeb5',
-            'target-arrow-color': '#afbeb5',
+            width: 1.4,
+            'line-color': '#b7c4bc',
+            'target-arrow-color': '#b7c4bc',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
             'font-size': 9,
-            color: '#66736d',
+            color: '#67756d',
             'text-background-color': '#f8faf8',
             'text-background-opacity': 1,
             'text-background-padding': '3px',
@@ -128,6 +155,9 @@ export default function GraphPage() {
       const value = visibleGraph.edges.find((edge) => edge.id === event.target.id())
       if (value) setSelected({ kind: 'edge', value })
     })
+    instance.on('tap', (event) => {
+      if (event.target === instance) setSelected(null)
+    })
     graphRef.current = instance
 
     return () => {
@@ -136,77 +166,97 @@ export default function GraphPage() {
     }
   }, [visibleGraph])
 
+  function zoomBy(factor: number) {
+    const instance = graphRef.current
+    if (!instance) return
+    instance.zoom(instance.zoom() * factor)
+    instance.center()
+  }
+
   return (
     <section className="graph-page">
-      <div className="panel graph-toolbar">
+      <div className="page-title graph-page-title">
         <div>
           <p className="section-kicker">KNOWLEDGE GRAPH</p>
-          <h2>法规实体关系</h2>
+          <h1>知识图谱</h1>
+          <p>探索法规实体、关系与对应的原始证据。</p>
         </div>
+        <div className="graph-summary">
+          <span><strong>{visibleGraph.nodes.length}</strong> 个实体</span>
+          <span><strong>{visibleGraph.edges.length}</strong> 条关系</span>
+        </div>
+      </div>
+
+      <div className="panel graph-toolbar">
         <label>
-          文档范围
+          <span>文档范围</span>
           <select value={documentId} onChange={(event) => setDocumentId(event.target.value)}>
             <option value="">全部已完成文档</option>
             {documents.map((document) => (
-              <option value={document.id} key={document.id}>
-                {document.filename}
-              </option>
+              <option value={document.id} key={document.id}>{document.filename}</option>
             ))}
           </select>
         </label>
-        <label>
-          搜索节点
+        <label className="search-field">
+          <Search size={16} />
           <input
             type="search"
             value={search}
-            placeholder="实体名称或类型"
+            placeholder="搜索实体名称或类型"
+            aria-label="搜索实体名称或类型"
             onChange={(event) => setSearch(event.target.value)}
           />
         </label>
+        <div className="graph-controls" aria-label="图谱缩放控制">
+          <button type="button" aria-label="放大图谱" onClick={() => zoomBy(1.2)}><ZoomIn size={17} /></button>
+          <button type="button" aria-label="缩小图谱" onClick={() => zoomBy(0.8)}><ZoomOut size={17} /></button>
+          <button type="button" aria-label="复位图谱" onClick={() => graphRef.current?.fit(undefined, 54)}><Maximize2 size={17} /></button>
+        </div>
       </div>
 
       {error && <p className="error-banner">{error}</p>}
-      {graph.truncated && <p className="notice-banner">节点超过 300 个，当前仅展示前 300 个。</p>}
+      {graph.truncated && <p className="notice-banner">实体超过 300 个，当前仅展示前 300 个。</p>}
 
-      <div className="graph-layout">
+      <div className="graph-workspace">
         <div className="panel graph-canvas-wrap">
-          <div className="graph-stats">
-            <span>{visibleGraph.nodes.length} 个实体</span>
-            <span>{visibleGraph.edges.length} 条关系</span>
-          </div>
+          {visibleTypes.length > 0 && (
+            <div className="graph-legend" aria-label="实体类型图例">
+              {visibleTypes.map((type) => (
+                <span key={type}><i style={{ background: ENTITY_COLORS[type] ?? ENTITY_COLORS.OTHER }} />{type}</span>
+              ))}
+            </div>
+          )}
           <div className="graph-canvas" ref={containerRef} />
           {!loading && visibleGraph.nodes.length === 0 && (
-            <div className="graph-empty">没有可展示的实体关系</div>
+            <div className="graph-empty"><Network size={32} /><span>没有可展示的实体关系</span></div>
           )}
           {loading && <div className="graph-empty">正在加载知识图谱…</div>}
         </div>
 
         <aside className="panel detail-panel">
-          <p className="section-kicker">DETAIL</p>
+          <p className="section-kicker">ELEMENT DETAIL</p>
           {!selected ? (
-            <p className="muted">点击节点或关系查看类型和来源 Chunk。</p>
+            <div className="detail-empty compact">
+              <Network size={28} />
+              <p>点击节点或关系查看类型和来源 Chunk。</p>
+            </div>
           ) : selected.kind === 'node' ? (
             <>
               <span className="type-pill">{selected.value.type}</span>
-              <h3>{selected.value.label}</h3>
-              <p className="muted">来源分块</p>
+              <h2>{selected.value.label}</h2>
+              <p className="detail-label">来源分块</p>
               <ul className="source-id-list">
-                {selected.value.source_chunk_ids.map((id) => (
-                  <li key={id}>{id}</li>
-                ))}
+                {selected.value.source_chunk_ids.map((id) => <li key={id}>{id}</li>)}
               </ul>
             </>
           ) : (
             <>
               <span className="type-pill">RELATES_TO</span>
-              <h3>{selected.value.predicate}</h3>
+              <h2>{selected.value.predicate}</h2>
               <dl className="edge-detail">
-                <dt>主体</dt>
-                <dd>{selected.value.source}</dd>
-                <dt>客体</dt>
-                <dd>{selected.value.target}</dd>
-                <dt>来源 Chunk</dt>
-                <dd>{selected.value.source_chunk_id}</dd>
+                <dt>主体</dt><dd>{selected.value.source}</dd>
+                <dt>客体</dt><dd>{selected.value.target}</dd>
+                <dt>来源 Chunk</dt><dd>{selected.value.source_chunk_id}</dd>
               </dl>
             </>
           )}
