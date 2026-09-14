@@ -1,0 +1,466 @@
+{
+  "started": "2026-09-14T05:14:18.139Z",
+  "pageErrors": [],
+  "failedResponses": [],
+  "checks": [
+    {
+      "name": "overview",
+      "value": {
+        "matters": 115,
+        "counts": "1481\n语义单元\n115\n办事事项\n288\n规则\n233\n操作\n36\n政策文档\n8\n研究文献\n357\n文献页数\n1481\n覆盖单元\n288\n已启用规则\n0\n待审核规则\n4503\n全库节点\n7801\n全库关系\n2341\n社区",
+        "build_id": "de0d04a9a1034b9e98b2da5ed4579c3d"
+      }
+    },
+    {
+      "name": "documents_readonly",
+      "value": {
+        "sources": 36,
+        "rules": 2,
+        "enabledExtraction": 1
+      }
+    },
+    {
+      "name": "graph_macro",
+      "value": {
+        "layer": "macro",
+        "nodes": 31,
+        "edges": 30,
+        "communities": 2341,
+        "build_id": "de0d04a9a1034b9e98b2da5ed4579c3d"
+      }
+    },
+    {
+      "name": "graph_micro",
+      "value": {
+        "layer": "micro",
+        "nodes": 12,
+        "edges": 13,
+        "communities": 2341,
+        "build_id": "de0d04a9a1034b9e98b2da5ed4579c3d"
+      }
+    },
+    {
+      "name": "graph_fused",
+      "value": {
+        "layer": "fused",
+        "nodes": 43,
+        "edges": 47,
+        "communities": 2341,
+        "build_id": "de0d04a9a1034b9e98b2da5ed4579c3d"
+      }
+    },
+    {
+      "name": "graph_directions",
+      "value": true
+    },
+    {
+      "name": "graph_export",
+      "value": "knowledge-graph-20260914-051425.json"
+    },
+    {
+      "name": "/api/research/workflow/check",
+      "value": {
+        "http_status": 200,
+        "status": "violated",
+        "goal_satisfied": false,
+        "first_error": {
+          "index": 0,
+          "action_id": "pension_account_received",
+          "kind": "external",
+          "message": "条件不满足；条件不满足；缺少外部已确认事实：pension_account_received_confirmed"
+        },
+        "missing_fields": [
+          "pension_account_received_confirmed"
+        ]
+      }
+    },
+    {
+      "name": "/api/research/workflow/repair",
+      "value": {
+        "http_status": 200,
+        "status": "unknown",
+        "steps": [
+          "pension_account_received"
+        ],
+        "cost": null
+      }
+    },
+    {
+      "name": "/api/research/workflow/repair",
+      "value": {
+        "http_status": 200,
+        "status": "repaired",
+        "steps": [
+          "pension_account_query",
+          "pension_account_received"
+        ],
+        "cost": 1
+      }
+    },
+    {
+      "name": "/api/research/workflow/next",
+      "value": {
+        "http_status": 200,
+        "status": "satisfied",
+        "candidates": [
+          {
+            "id": "pension_account_query",
+            "status": "satisfied",
+            "has_preview": true
+          },
+          {
+            "id": "pension_account_received",
+            "status": "violated",
+            "has_preview": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "history_after_apply",
+      "value": 1
+    },
+    {
+      "name": "/api/research/workflow/next",
+      "value": {
+        "http_status": 200,
+        "status": "satisfied",
+        "candidates": [
+          {
+            "id": "pension_account_query",
+            "status": "satisfied",
+            "has_preview": true
+          },
+          {
+            "id": "pension_account_received",
+            "status": "unknown",
+            "has_preview": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "unconfirmed_external_stays_unknown",
+      "value": "unknown"
+    },
+    {
+      "name": "/api/research/workflow/next",
+      "value": {
+        "http_status": 200,
+        "status": "satisfied",
+        "candidates": [
+          {
+            "id": "pension_account_query",
+            "status": "satisfied",
+            "has_preview": true
+          },
+          {
+            "id": "pension_account_received",
+            "status": "satisfied",
+            "has_preview": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "/api/research/workflow/check",
+      "value": {
+        "http_status": 200,
+        "status": "satisfied",
+        "goal_satisfied": true,
+        "first_error": null,
+        "missing_fields": []
+      }
+    },
+    {
+      "name": "final_simulation",
+      "value": {
+        "status": "satisfied",
+        "goal": true,
+        "history": 2,
+        "historyDeleteButtons": 0
+      }
+    },
+    {
+      "name": "/api/qa",
+      "value": {
+        "http_status": 200,
+        "mode": "causal",
+        "run_id": "af56f3e05d144a1998b447f85705bcad",
+        "rule_checks": [
+          {
+            "id": "pension_account_query_rule",
+            "status": "satisfied",
+            "used_for_answer": true,
+            "occurrences": 7
+          },
+          {
+            "id": "pension_account_query",
+            "status": "satisfied",
+            "used_for_answer": true,
+            "occurrences": 2
+          },
+          {
+            "id": "pension_account_received_rule",
+            "status": "satisfied",
+            "used_for_answer": true,
+            "occurrences": 4
+          },
+          {
+            "id": "pension_account_received",
+            "status": "satisfied",
+            "used_for_answer": true,
+            "occurrences": 1
+          },
+          {
+            "id": "pension_account_received_rule",
+            "status": "satisfied",
+            "used_for_answer": false,
+            "occurrences": 106
+          },
+          {
+            "id": "pension_account_received",
+            "status": "satisfied",
+            "used_for_answer": false,
+            "occurrences": 51
+          },
+          {
+            "id": "pension_account_query_rule",
+            "status": "satisfied",
+            "used_for_answer": false,
+            "occurrences": 70
+          },
+          {
+            "id": "pension_account_query",
+            "status": "satisfied",
+            "used_for_answer": false,
+            "occurrences": 30
+          }
+        ],
+        "sources": 1,
+        "paths": 5,
+        "rule_check_count": 271
+      }
+    },
+    {
+      "name": "qa_sent_context",
+      "value": {
+        "question": "本人查询核对社会保险缴费和待遇记录是否收费？请说明依据与当前模拟中的办理状态。",
+        "mode": "causal",
+        "history": [],
+        "dataset": "research",
+        "matter_id": "pension_account",
+        "region": "武汉",
+        "as_of": "2026-09-14",
+        "profile": "full",
+        "facts": {
+          "pension_account_query_done": true,
+          "pension_account_received_confirmed": true
+        },
+        "completed_steps": [
+          "pension_account_query",
+          "pension_account_received"
+        ]
+      }
+    },
+    {
+      "name": "causal_live",
+      "value": {
+        "mode": "causal",
+        "run_id": "af56f3e05d144a1998b447f85705bcad",
+        "sources": 1,
+        "paths": 5,
+        "answer_excerpt": "## 结论\n\n**免费。** 社会保险经办机构向用人单位和个人提供查询核对社会保险缴费和享受社会保险待遇记录等服务，不收费。\n\n## 依据\n\n[S1]《社会保险经办条例》第三十二条规定：“社会保险经办机构免费向用人单位和个人提供查询核对社会保险缴费和享受社会保险待遇记录、社会保险咨询等相关服务。”[S1]\n\n据此，本人查询核对自己的社会保险缴费记录和待遇记录，属于上述免费服务范围。[S1]\n\n## 当前模拟中的办理状态\n\n按已入库规则的校验结果：\n\n| 节点/动作 | 规则标签 | 校验状态 |\n|---|---|---|\n| pension_account_query_rule（前置条件） | 查询核对本人社会保险缴费和待遇记录的前置条件 | satisfied |\n| pension_account_query（动作） | 查询核对本人社会保险缴费和待遇记录 | satisfied |\n| pension_account_received_rule（前置条件） | 记录经办机构已提供查询核对结果的前置条件 | satisfied |\n| pension_account_received（动作） | 记录经办机构已提供查询核对结果 | satisfied |\n\n模拟中已完成步骤为：`pension_account_query`、`pension_account_received`（即模拟中已按路径走完“查询核对”与“记录已提供查询核对结果”两步）。\n\n需注意：上述多条路径均指向同一组规则与证据[S1]，模拟状态为 satisfied 不代表各路径的全部条件同时成立，也不代表完整的受理或审批结论。\n\n## 必须说明的缺口与限制\n\n- 规则校验依据的是已入库政策版本，**后续修订和当前清理状态未经外部核验**，本资料不保证当前有效。\n- 已核对规则**仅覆盖所列条件**，不代"
+      }
+    },
+    {
+      "name": "persisted_real_history",
+      "value": {
+        "turns": 1,
+        "context": [
+          "研究资料库 · 武汉 · 2026-09-14 · full",
+          "仅诊断，未用于回答",
+          "1 跳 · 1 条关联规则",
+          "2 跳 · 1 条关联规则"
+        ],
+        "storedContext": {
+          "dataset": "research",
+          "matter_id": "pension_account",
+          "region": "武汉",
+          "as_of": "2026-09-14",
+          "profile": "full",
+          "facts": {
+            "pension_account_query_done": true,
+            "pension_account_received_confirmed": true
+          },
+          "completed_steps": [
+            "pension_account_query",
+            "pension_account_received"
+          ]
+        }
+      }
+    },
+    {
+      "name": "uploaded_mode_switch",
+      "value": {
+        "matterDisabled": true,
+        "workflowHidden": true
+      }
+    },
+    {
+      "name": "old_documents",
+      "value": [
+        {
+          "filename": "legal_sample.md",
+          "status": "COMPLETED",
+          "chunks": 7
+        }
+      ]
+    }
+  ],
+  "build_id": "de0d04a9a1034b9e98b2da5ed4579c3d",
+  "counts": {
+    "units": 1481,
+    "matters": 115,
+    "rules": 288,
+    "actions": 233,
+    "policy_documents": 36,
+    "reference_documents": 8,
+    "reference_pages": 357,
+    "covered_units": 1481,
+    "active_rules": 288,
+    "candidate_rules": 0,
+    "nodes": 4503,
+    "edges": 7801,
+    "communities": 2341
+  },
+  "finished": "2026-09-14T05:14:32.997Z",
+  "baselines": [
+    {
+      "run_id": "bb838e53b0e14f96828440363205b1d2",
+      "mode": "vector",
+      "dataset": "research",
+      "question": "查询社会保险缴费记录是否收费？",
+      "source_count": 8,
+      "source_names": [
+        "社会保险经办条例",
+        "中华人民共和国社会保险法",
+        "市人民政府关于进一步完善城乡居民基本养老保险制度的实施意见",
+        "国务院关于建立统一的城乡居民基本养老保险制度的意见"
+      ],
+      "answer_excerpt": "结论：**向社会保险经办机构查询、核对社会保险缴费记录不收费**，属于法定免费服务。\n\n依据《社会保险经办条例》第三十二条：\n\n> 社会保险经办机构免费向用人单位和个人提供查询核对社会保险缴费和享受社会保险待遇记录、社会保险咨询等相关服务。",
+      "build_id": "e5df93e03ddd428f8e5cf80bd6c87b32"
+    },
+    {
+      "run_id": "559f11d447a44afab9f664b4e4387fff",
+      "mode": "hybrid",
+      "dataset": "research",
+      "question": "查询社会保险缴费记录是否收费？",
+      "source_count": 8,
+      "source_names": [
+        "社会保险经办条例",
+        "中华人民共和国社会保险法",
+        "市人民政府关于进一步完善城乡居民基本养老保险制度的实施意见",
+        "国务院关于建立统一的城乡居民基本养老保险制度的意见"
+      ],
+      "answer_excerpt": "不收费。根据《社会保险经办条例》第三十二条，社会保险经办机构免费向用人单位和个人提供查询核对社会保险缴费和享受社会保险待遇记录、社会保险咨询等相关服务。[S1]\n\n因此，在武汉，向社会保险经办机构查询社会保险缴费记录，原则上属于免费服务。所",
+      "build_id": "e5df93e03ddd428f8e5cf80bd6c87b32"
+    }
+  ],
+  "recorded_history_screenshot": {
+    "source": "real persisted backend run",
+    "run_id": "af56f3e05d144a1998b447f85705bcad",
+    "mode": "causal",
+    "diagnostic_hint_count": 257,
+    "original_result_unchanged": true,
+    "original_build_id": "e5df93e03ddd428f8e5cf80bd6c87b32"
+  },
+  "policy_form": {
+    "build_id": "de0d04a9a1034b9e98b2da5ed4579c3d",
+    "matter": "housing_existing_loan",
+    "requested_loan": {
+      "editable": true,
+      "value": 500000
+    },
+    "policy_field": {
+      "id": "loan_maximum_at_application",
+      "element": "OUTPUT",
+      "value": "未知",
+      "editable_inputs": 0
+    },
+    "request": {
+      "region": "武汉",
+      "as_of": "2026-09-14",
+      "profile": "full",
+      "matter_id": "housing_existing_loan",
+      "facts": {
+        "requested_loan": 500000
+      },
+      "steps": [],
+      "completed_steps": [],
+      "goal": "housing_existing_loan_prepare"
+    },
+    "http_status": 200,
+    "status": "unknown",
+    "amount_rule": null,
+    "policy_value_omitted": true,
+    "pageErrors": []
+  },
+  "legacy_real_response_migration": {
+    "legacyRemoved": true,
+    "newStore": true,
+    "turns": 1,
+    "original_run_id": "559f11d447a44afab9f664b4e4387fff"
+  },
+  "final_reviewed_at": "2026-09-14T05:25:06.273Z",
+  "community_export": {
+    "community_id": "c2:adac693653625f741b8e",
+    "nodes": 12,
+    "edges": 13,
+    "graphml_directed": true,
+    "graphml_layer": true,
+    "errors": []
+  },
+  "answer_rendering": [
+    {
+      "run_id": "af56f3e05d144a1998b447f85705bcad",
+      "mode": "causal",
+      "headings": 4,
+      "strong": 4,
+      "tables": 1,
+      "tableOverflow": "auto",
+      "horizontalDocumentOverflow": false
+    },
+    {
+      "run_id": "559f11d447a44afab9f664b4e4387fff",
+      "mode": "hybrid",
+      "headings": 0,
+      "strong": 0,
+      "tables": 0,
+      "tableOverflow": null,
+      "horizontalDocumentOverflow": false,
+      "plain_text_preserved": true
+    }
+  ],
+  "final_frontend_checks": {
+    "tests": {
+      "passed": 18,
+      "failed": 0
+    },
+    "lint": "passed",
+    "build": "passed",
+    "raw_html": "disabled by react-markdown skipHtml; no rehype-raw or dangerouslySetInnerHTML"
+  },
+  "initial_acceptance_build_id": "e5df93e03ddd428f8e5cf80bd6c87b32",
+  "current_build_refresh": {
+    "at": "2026-09-14T05:31:42.196Z",
+    "build_id": "de0d04a9a1034b9e98b2da5ed4579c3d",
+    "refreshed_screenshots": [
+      "overview.png",
+      "graph.png",
+      "loan-policy.png"
+    ],
+    "qa_screenshot": "kept from real historical run; no new LLM call",
+    "earlier_integration_checks_build_id": "e5df93e03ddd428f8e5cf80bd6c87b32"
+  }
+}

@@ -204,9 +204,41 @@ examples/legal_sample.md 端到端演示法规
 docker-compose.yml       Neo4j Community
 ```
 
-## 一期边界
+## 规则与因果增强研究系统
 
-当前版本是论文创新实验的基础对照系统，不包含 PDF/Word/OCR、用户登录、多租户、
-服务端会话持久化、reranker、关键词检索、流式输出、图谱人工编辑和生产部署。多个
-本地会话及其完整证据只保存在当前浏览器。后续创新点应以独立实验变量逐项接入，保留
-`vector` 模式作为消融对照。
+概览页可构建 `data/guojia_shebao`、`data/wuhan_shebao` 中的全部政策和
+`data/research_papers` 中带文本层的 PDF。当前资料包含 36 份政策与 8 篇文献，形成
+115 个事项目录、288 条经实现者原文核对的演示规则、233 个动作。文献只用于辅助检索。
+全量事项映射不意味着所有条款已转成可执行规则；各事项分别展示检索、条件检查、
+流程模拟和修复能力及资料缺口，见 [覆盖说明](docs/data-coverage.md)。
+
+1. 概览页选择研究配置并构建；不同配置保存独立快照，构建状态与错误实时可见。
+2. 文档页查看原文、法规单元、适用日期及规则；自动抽取只产生候选，审阅后才能启用。
+3. 图谱页切换宏观、微观和融合图，按事项、社区筛选，查看方向、RPC/SCS 与来源。
+4. 问答页选择研究资料库和 `vector`、`hybrid` 或 `causal` 模式，输入事项、地域及业务日期。
+5. 在页内流程面板填写已知事实与步骤，检查首错、预览修复和下一步，再应用到当前模拟。
+
+API 增量入口位于 `/api/research`，接口字段见
+[研究接口约定](docs/research-contract.md) 和运行中的 `/docs`。旧上传资料库与浏览器会话继续可用。
+研究库移除文档保留原文件；旧上传接口的删除行为仍会删除其上传副本。
+
+新增内容持久化在 Neo4j 的 ResearchNode / RESEARCH_LINK 与 `.runtime/research/`：
+快照含条款、向量、规则、图谱和社区，JSONL 日志记录配置、构建和运行，审阅记录绑定规则与原文指纹。
+原文修改、规则停用或重建会使旧关联结果失效。政策原文由 `.gitattributes` 保留字节与换行，避免跨平台检出改变审核哈希。
+用户提供的学术 PDF、参考学位论文、密钥与缓存保留本地，不提交 Git。
+
+Windows 当前使用 D 盘的 Python、Node、Neo4j、Java 与 BGE-M3 缓存，运行 `./start-windows.ps1`。
+`backend/uv.lock` 固定依赖；Windows AMD64 使用 PyTorch 2.9.1 + CUDA 12.6，已验证本机 RTX 4060 可用。
+研究库首次构建需要计算向量，后续重建复用内容缓存。
+
+隔离命名空间的研究存储测试（不删除原知识库）：
+
+```powershell
+cd backend
+$env:RUN_RESEARCH_NEO4J_TESTS='1'
+./.venv/Scripts/python.exe -m pytest tests/integration/test_research_store.py -q
+```
+
+实现架构、边界与论文方法映射见 [架构](docs/architecture.md)、[功能](docs/features.md)、
+[技术决策](docs/decisions.md) 和 [方法映射](docs/method-implementation-mapping.md)。
+论文源文、Word 与可编辑图源位于 `docs/thesis/`。本次仅完成工程验收，科研实验结果留空。

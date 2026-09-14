@@ -1,0 +1,14 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      source [label="政策原文与研究文献\n法源、地域、版本、条款 / PDF 页码"];
+      inventory [label="全量覆盖与事项建模\n条件、动作、证据及知识缺口"];
+      dual [label="规则约束的双层图谱\n宏观语义层 + 微观约束层\nRPC / SCS 筛选"];
+      retrieval [label="约束社区与多跳检索\n强约束收缩 → Leiden → 有向路径"];
+      application [label="证据问答与流程纠错\n三态检查 / 最低编辑成本修复 / 下一步预览"];
+      protocol [label="实验设计与待验证假设\n对比、消融、参数与统计分析\n本次科研结果留空",style="rounded,dashed"];
+      source -> inventory -> dual -> retrieval -> application -> protocol;
+
+}

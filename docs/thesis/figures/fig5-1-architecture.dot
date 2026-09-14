@@ -1,0 +1,30 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      graph [compound=true];
+      subgraph cluster_browser { label="浏览器：React + TypeScript + Vite"; labeljust=l; color="#7c8b97";
+        pages [label="概览 / 文档管理 / 知识图谱 / 法规问答"];
+        forms [label="动态事实表单、步骤序列\n原文审阅、图谱与模拟状态"];
+        history [label="浏览器会话存储\n兼容既有问答记录"];
+        pages -> forms; pages -> history;
+      }
+      subgraph cluster_backend { label="FastAPI / Python 3.12"; labeljust=l; color="#7c8b97";
+        api [label="问答、图谱、构建、规则与流程 API"];
+        corpus [label="全量原文解析与事项目录\n候选抽取、结构校验及审核"];
+        kg [label="双层图谱、RPC / SCS\nLeiden 社区与路径检索"];
+        workflow [label="受限 JSON 规则引擎\n重放、修复和下一步计算"];
+        service [label="配置版本、证据组织与运行日志"];
+        api -> corpus; api -> kg; api -> workflow; corpus -> kg;
+        kg -> service; workflow -> service;
+      }
+      neo4j [label="Neo4j\n基础图 + 增强节点/关系 + 有效版本头"];
+      disk [label="D 盘本地文件\n原始资料 / PDF 与向量缓存\n版本快照 / 运行日志"];
+      model [label="BGE-M3 本地向量模型\n已配置的大模型接口"];
+      forms -> api [label="HTTP JSON",ltail=cluster_browser,lhead=cluster_backend];
+      service -> neo4j; corpus -> disk; service -> disk; kg -> model;
+      corpus -> model [style=dashed,label="候选抽取"];
+      service -> model [style=dashed,label="回答生成"];
+
+}

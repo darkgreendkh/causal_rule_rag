@@ -1,0 +1,19 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      pair [label="来自已定位原文引用的\n条款—微观规则候选对"];
+      conflict [label="地域、日期区间\n及同规范版本有冲突？",shape=diamond];
+      reject [label="拒绝融合\n不受消融开关放行"];
+      parts [label="计算三个评分分量"];
+      semantic [label="BGE 稠密余弦 s\n截断至 [0, 1]"];
+      support [label="逐字引用覆盖率 e"];
+      type [label="条款 → 规则\n类型兼容 t = 1"];
+      score [label="SCS = 0.5s + 0.3e + 0.2t"];
+      retain [label="保留达到阈值的 REALIZES 边\n记录两端 ID、全部引用、评分分量"];
+      pair -> conflict; conflict -> reject [label="有冲突"];
+      conflict -> parts [label="无冲突"]; parts -> semantic; parts -> support; parts -> type;
+      semantic -> score; support -> score; type -> score; score -> retain;
+
+}

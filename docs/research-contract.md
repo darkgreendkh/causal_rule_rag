@@ -54,7 +54,7 @@
 - GET `/api/research/coverage` -> Coverage[]。
 - POST `/api/research/workflow/check|repair|next` -> 上述workflow结果。
 - GET `/api/research/graph?layer=fused|macro|micro&matter_id=&community_id=&limit=300` -> `{nodes,edges,truncated,communities,build_id}`。节点兼容旧GraphNode并加layer/community_id；边兼容旧GraphEdge并加type/layer/rpc/scs/evidence/rule_ids。
-- POST `/api/qa`新增mode=causal，可选matter_id,region,as_of,facts,profile；保留原history。
+- POST `/api/qa`新增mode=causal，可选matter_id,region,as_of,facts,completed_steps,profile；保留原history。completed_steps默认空列表，页面传入当前模拟已办历史，会话保存该上下文。
 - QAResponse新增可选`causal_paths,rule_checks,communities,knowledge_gaps,run_id`，旧字段answer/mode/sources/graph_paths不变。
 - causal_paths项`{id,node_ids,edge_ids,labels,score,semantic_score,rpc,entropy,evidence,rule_ids}`。
 - `/api/research/summary`的profiles为`[{id,label,description}]`，前端只需用于研究配置选择。
@@ -62,3 +62,15 @@
 ## 所有权
 
 agents不编辑彼此文件；共享models/main/api/qa由root编辑。前端只编辑frontend目录。不提交其他人的改动。测试使用backend/.venv/Scripts/python.exe。
+
+## 实施补充
+
+- GET `/api/research/actions?matter_id=` 返回事项动作；GET `/api/research/units?document_id=` 返回原文单元；GET `/api/research/source/{unit_id}` 定位条款或PDF页。
+- POST `/api/research/rules/extract` 接受 `{matter_id,unit_ids}`（最多5条款），返回候选规则及知识版本。模型候选不自动启用，结构和引用错误保留在规则审阅列表。
+- DELETE `/api/research/documents/{id}` 仅从增强知识库排除来源，保留原文件并失效旧规则、关联社区和其他配置快照。
+- QARequest增加 `dataset=uploaded|research`，默认uploaded保持旧客户端；研究资料库内vector、hybrid和causal使用同一解析语料，分别执行文本检索、普通宏观邻接扩展和规则因果路径检索。
+- `purpose=condition_check` 的规则用于空步骤纯条件核查，也仍受action_id绑定；准备步骤不受提交阶段资格条件提前阻断。真实流程在对应动作执行时校验这些条件，不能跳过必要资格。
+- 路径增加 `rule_status`：unknown路径仅表示可供解释的证据依赖，不能声称已达到目标状态。
+- rule_checks包含`path_id`与`used_for_answer`：False表示仅诊断；必要原文未完整装配到来源预算时，不把其判定交给生成模型。完整表达式核查补齐同一owner的AND条件，按路径顺序推进，缺前缀或后缀未验证均明确标记。
+- 贷款事项的`loan_maximum_at_application`属于policy角色，单位元，知识配置默认未知。请求同名facts值被忽略，仅采用matter.policy_parameters；`requested_loan`为申请人事实。
+- `goal_satisfied` 可以是true/false/null；下一步候选preview_state可以为null。流程状态不等同于真实机关审批结论。

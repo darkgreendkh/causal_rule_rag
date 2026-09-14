@@ -1,0 +1,16 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      path [label="候选有向路径"];
+      owners [label="关联规则与动作的完整表达式"];
+      ands [label="AND 必要条件集合\nOR / NOT 保持原逻辑"];
+      refs [label="来源存在且引用逐字匹配\n去重后最多八个条款单元"];
+      gaps [label="缺事实 / 缺规则 / 外部待确认\n来源缺失 / 引用不符 / 超预算",style="rounded,dashed"];
+      prompt [label="生成输入\n原文编号 + 证据完整的检查与路径 + 缺口"];
+      result [label="回答 [S1]…\n路径、规则检查与缺口同时展示"];
+      path -> owners -> ands -> refs -> prompt -> result;
+      ands -> gaps; refs -> gaps; gaps -> prompt [label="仅缺口提示"];
+
+}

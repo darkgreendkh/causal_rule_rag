@@ -1,0 +1,32 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      graph [splines=line, overlap=true];
+      macro_frame [shape=box,style="",label="宏观语义层",labelloc=t,pos="122,220!",width=3.8,height=4.31,fontsize=16,color="#7c8b97"];
+      micro_frame [shape=box,style="",label="微观约束层",labelloc=t,pos="505,162!",width=3.7,height=5.92,fontsize=16,color="#7c8b97"];
+      subgraph cluster_macro { label="宏观语义层"; labeljust=l; color="#7c8b97"; margin=16;
+        doc [label="法规版本",pos="190,320!"]; article [label="政策条款",pos="190,210!"];
+        matter [label="办理事项",pos="50,320!"]; role [label="参与角色",pos="50,210!"];
+        material [label="材料 / 字段",pos="50,100!"];
+        operation [label="业务操作",pos="190,100!"];
+        doc -> article [label="CONTAINS"];
+        matter -> article [label="依据条款"];
+        matter -> role [label="INVOLVES"]; role -> material [label="PROVIDES"];
+        matter -> operation [label="HANDLES"];
+      }
+      subgraph cluster_micro { label="微观约束层"; labeljust=l; color="#7c8b97"; margin=16;
+        c1 [label="必要条件 A",pos="440,320!"]; c2 [label="必要条件 B",pos="570,320!"];
+        rule [label="AND 规则",pos="505,210!"];
+        action [label="动作及前置条件",pos="505,100!"];
+        state [label="允许的模拟状态\n外部结果须事实确认",pos="505,-10!"];
+        c1 -> rule [label="REQUIRES"]; c2 -> rule [label="REQUIRES"];
+        rule -> action [label="REQUIRES"]; action -> state [label="PRODUCES"];
+      }
+      link_rule [shape=plain,style="",label="REALIZES\n引用 + SCS",pos="315,210!",fontsize=11,fontcolor="#345d7e"];
+      link_action [shape=plain,style="",label="REALIZES\n同一操作",pos="315,100!",fontsize=11,fontcolor="#345d7e"];
+      article -> link_rule [arrowhead=none,color="#345d7e"]; link_rule -> rule [color="#345d7e"];
+      operation -> link_action [arrowhead=none,color="#345d7e"]; link_action -> action [color="#345d7e"];
+
+}

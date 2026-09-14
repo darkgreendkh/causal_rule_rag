@@ -1,0 +1,17 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      input [label="候选规则或动作\n受限表达式 + 独立原文引用"];
+      evidence [label="证据覆盖 Cₑ\n逐字可定位引用 / 所有引用"];
+      continuity [label="条件衔接 Cₗ\n字段、动作引用与效果定义闭合"];
+      temporal [label="时间与顺序 Cₜ\n适用域交集 + 必需前置无环"];
+      aggregate [label="RPC = (Cₑ + Cₗ + Cₜ) / 3"];
+      filter [label="阈值筛选与分量留存\n默认 0.7；强约束默认 0.85"];
+      note [label="结构筛选指标\n不证明政策解释或抽取内容真实",style="rounded,dashed"];
+      input -> evidence; input -> continuity; input -> temporal;
+      evidence -> aggregate; continuity -> aggregate; temporal -> aggregate;
+      aggregate -> filter -> note;
+
+}

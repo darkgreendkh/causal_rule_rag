@@ -1,0 +1,17 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      original [label="原始有向知识图\n语义权重与证据属性"];
+      group [label="识别 active、高 RPC、无冲突关系\n并查集合并强约束组"];
+      contract [label="收缩成无向加权商图\n聚合组间权重与组内自环权重"];
+      leiden [label="Leiden 粗层划分\n模块度目标；固定随机种子 42"];
+      refine [label="诱导子图递归细分\nCPM 目标；至多三级"];
+      expand [label="展开原节点归属\n保存父子社区、成员及不可拆分标记"];
+      query [label="原始有向边继续用于检索和规则检查"];
+      original -> group -> contract -> leiden -> refine -> expand;
+      original -> query [style=dashed,label="方向不被收缩图替代"];
+      expand -> query;
+
+}

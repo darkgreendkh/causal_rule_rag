@@ -1,0 +1,146 @@
+{
+  "main_text_hanzi": 37475,
+  "chapters": {
+    "01-introduction.md": 5179,
+    "02-background.md": 5262,
+    "03-dual-graph.md": 5873,
+    "04-causal-retrieval.md": 6329,
+    "05-system-workflow.md": 6759,
+    "06-experiments.md": 6226,
+    "07-conclusion.md": 1847
+  },
+  "references": [
+    {
+      "number": 1,
+      "key": "Chen2025",
+      "text": "陈斌. 中国式现代化进程中的数字化转型与社会保障制度适应性改革[J]. 社会科学文摘, 2025(11): 100-102.",
+      "url": "https://sbpl.cbpt.cnki.net/portal/journal/portal/client/paper/957968d192dc8c771826d113c0791253",
+      "verification_note": "L1。本地3页为转载摘要，刊页100-102；正文仅引用该摘要可见内容。所附URL核验原刊《社会保障评论》2025,9(4):56-73的元数据，不是本地转载刊条目；未声称通读原刊全文。DOI未查得。"
+    },
+    {
+      "number": 2,
+      "key": "Xi2025",
+      "text": "席恒. 中国社会保障自主知识体系建设中的理论构建[J]. 济南大学学报(社会科学版), 2025, 35(1): 21-29. DOI: 10.20004/j.cnki.ujn.2025.01.003.",
+      "url": "https://doi.org/10.20004/j.cnki.ujn.2025.01.003",
+      "verification_note": "L2。本地首页、正文刊页及DOI与提纲记录的期刊原始PDF核对。正文9页为21-29；本地第10页另为刊页189的英文摘要，不并入正文页码。"
+    },
+    {
+      "number": 3,
+      "key": "Yang2026",
+      "text": "杨俊. 中国职工养老保险建制理念、现实困境和改革出路——对“统账结合”制度模式的反思与发展建议[J]. 社会保障评论, 2026, 10(1): 95-108.",
+      "url": "https://www.caoss.org.cn/upload/news/20260311/e7f7d826a3bb428e86caa55994e389dd.pdf",
+      "verification_note": "L3。题名、作者、年卷期与首末刊页以本地原件核对。中国社会保障学会PDF地址已在提纲中定位，但此前浏览打开失败，不能视为本轮网络全文核验。DOI未查得。"
+    },
+    {
+      "number": 4,
+      "key": "Zhou2024",
+      "text": "周佩. 职工基本养老保险制度高质量发展的理论逻辑与路径优化研究[D]. 成都: 西南财经大学, 2024.",
+      "url": "https://spa.swufe.edu.cn/info/1041/11741.htm",
+      "verification_note": "L6。本地封面核实题名、作者、学校及2024年5月定稿，摘要核实公平、效率和可持续性框架。学校博士学位申请成果公示仅交叉确认作者及学位类别，未列本篇题名；未据此声称授予日期。不填写期刊卷期页或猜测DOI。"
+    },
+    {
+      "number": 5,
+      "key": "YinZhong2021",
+      "text": "尹成远, 仲伟东. 城乡居民基本养老保险制度效率省域差异及其影响因素[J]. 现代财经(天津财经大学学报), 2021(8): 51-63. DOI: 10.19559/j.cnki.12-1387.2021.08.004.",
+      "url": "https://doi.org/10.19559/j.cnki.12-1387.2021.08.004",
+      "verification_note": "L4。本地题名、作者、期号、文章编号、页码与DOI已核；省域差异讨论依据本地摘要。提纲中的卷41尚缺期刊一手条目复核，此条省略卷号，不把其他论文的参考表当作原刊核验。DOI此前浏览解析失败。"
+    },
+    {
+      "number": 6,
+      "key": "LiYi2025",
+      "text": "李保华, 伊辉. 职工社保如何影响企业劳动力市场势力？——基于社保政策碎片化的视角[J]. 劳动经济研究, 2025, 13(4): 111-139.",
+      "url": "https://sle.ajcass.com/Admin/UploadFile/Issue/201911110002/2025/8/20250811025201WU_FILE_0.pdf",
+      "verification_note": "L7。本地作者、刊名年卷期及首末刊页已核，相关背景表述依据本地摘要。原刊PDF地址已在提纲中定位但此前浏览打开失败；作者所属高校成果页可交叉确认题名，不将其当作全文阅读。DOI未查得。"
+    },
+    {
+      "number": 7,
+      "key": "He2017",
+      "text": "何文炯. 建立健全社会保险精算制度[J]. 中国社会保障, 2017(4): 33.",
+      "url": "",
+      "verification_note": "L5。本地单页原文及页脚《中国社会保障·2017年第4期33》已核。未找到文章自身的一手网络条目和DOI；不使用同主题研讨会报道代替本篇书目来源。"
+    },
+    {
+      "number": 8,
+      "key": "QiHuYue2025",
+      "text": "戚昌厚, 胡一凡, 岳希明. 重新评估社会保障支出的收入再分配效应——兼论收入再分配效应测量的理论澄清[J]. 管理世界, 2025(2). DOI: 10.19744/j.cnki.11-1235/f.2025.0026.",
+      "url": "https://doi.org/10.19744/j.cnki.11-1235/f.2025.0026",
+      "verification_note": "L8。本地首页核实题名、作者及DOI；提纲所列山东大学研究中心页面支持期刊、年份和期号。本地刊页128-141与其他参考表128-142有出入，且本地另有英文摘要页9，因此省略卷号与页码，待原刊导出书目确认，不由PDF页数推断页尾。"
+    },
+    {
+      "number": 9,
+      "key": "RAG2020",
+      "text": "LEWIS P, PEREZ E, PIKTUS A, et al. Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks[C]//Advances in Neural Information Processing Systems. 2020,33:9459-9474.",
+      "url": "https://proceedings.nips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html"
+    },
+    {
+      "number": 10,
+      "key": "DPR2020",
+      "text": "KARPUKHIN V, OGUZ B, MIN S, et al. Dense Passage Retrieval for Open-Domain Question Answering[C]//Proceedings of EMNLP. 2020:6769-6781. DOI:10.18653/v1/2020.emnlp-main.550.",
+      "url": "https://aclanthology.org/2020.emnlp-main.550/"
+    },
+    {
+      "number": 11,
+      "key": "GraphRAG2024",
+      "text": "EDGE D, TRINH H, CHENG N, et al. From Local to Global: A Graph RAG Approach to Query-Focused Summarization[EB/OL]. 2024[2026-09-14]. arXiv:2404.16130.",
+      "url": "https://arxiv.org/abs/2404.16130"
+    },
+    {
+      "number": 12,
+      "key": "Leiden2019",
+      "text": "TRAAG V A, WALTMAN L, VAN ECK N J. From Louvain to Leiden: guaranteeing well-connected communities[J]. Scientific Reports, 2019,9:5233. DOI:10.1038/s41598-019-41695-z.",
+      "url": "https://arxiv.org/abs/1810.08473"
+    },
+    {
+      "number": 13,
+      "key": "STRIPS1971",
+      "text": "FIKES R E, NILSSON N J. STRIPS: A new approach to the application of theorem proving to problem solving[J]. Artificial Intelligence, 1971,2(3-4):189-208. DOI:10.1016/0004-3702(71)90010-5.",
+      "url": "https://www.sciencedirect.com/science/article/pii/0004370271900105"
+    },
+    {
+      "number": 14,
+      "key": "Counterfactual2018",
+      "text": "WACHTER S, MITTELSTADT B, RUSSELL C. Counterfactual Explanations Without Opening the Black Box: Automated Decisions and the GDPR[J]. Harvard Journal of Law & Technology, 2018,31(2):841-887.",
+      "url": "https://jolt.law.harvard.edu/assets/articlePDFs/v31/Counterfactual-Explanations-without-Opening-the-Black-Box-Sandra-Wachter-et-al.pdf"
+    },
+    {
+      "number": 15,
+      "key": "Pearl2009",
+      "text": "PEARL J. Causal inference in statistics: An overview[J]. Statistics Surveys, 2009,3:96-146. DOI:10.1214/09-SS057.",
+      "url": "https://escholarship.org/content/qt36w8n7pg/qt36w8n7pg.pdf"
+    },
+    {
+      "number": 16,
+      "key": "BGE2024",
+      "text": "CHEN J, XIAO S, ZHANG P, et al. BGE M3-Embedding: Multi-Lingual, Multi-Functionality, Multi-Granularity Text Embeddings Through Self-Knowledge Distillation[EB/OL]. 2024[2026-09-14]. arXiv:2402.03216v4.",
+      "url": "https://arxiv.org/abs/2402.03216v4",
+      "verification_note": "固定2024年v4版本题名，未与后续更新稿混写。"
+    },
+    {
+      "number": 17,
+      "key": "Dijkstra1959",
+      "text": "DIJKSTRA E W. A note on two problems in connexion with graphs[J]. Numerische Mathematik, 1959,1:269-271. DOI:10.1007/BF01386390.",
+      "url": "https://link.springer.com/article/10.1007/BF01386390"
+    },
+    {
+      "number": 18,
+      "key": "BM252009",
+      "text": "ROBERTSON S, ZARAGOZA H. The Probabilistic Relevance Framework: BM25 and Beyond[J]. Foundations and Trends in Information Retrieval, 2009,3(4):333-389. DOI:10.1561/1500000019.",
+      "url": "https://www.nowpublishers.com/article/Details/INR-019"
+    },
+    {
+      "number": 19,
+      "key": "Significance2018",
+      "text": "DROR R, BAUMER G, SHLOMOV S, REICHART R. The Hitchhiker’s Guide to Testing Statistical Significance in Natural Language Processing[C]//Proceedings of ACL. 2018:1383-1392. DOI:10.18653/v1/P18-1128.",
+      "url": "https://aclanthology.org/P18-1128/"
+    },
+    {
+      "number": 20,
+      "key": "NDCG2002",
+      "text": "JÄRVELIN K, KEKÄLÄINEN J. Cumulated Gain-based Evaluation of IR Techniques[J]. ACM Transactions on Information Systems, 2002,20(4):422-446. DOI:10.1145/582415.582418.",
+      "url": "https://researchportal.tuni.fi/en/publications/cumulated-gain-based-evaluation-of-ir-techniques"
+    }
+  ],
+  "research_results": "not_run",
+  "experimental_figures": 11,
+  "counting": "Unicode Han characters; excludes headings, tables, figure captions and fenced algorithms"
+}

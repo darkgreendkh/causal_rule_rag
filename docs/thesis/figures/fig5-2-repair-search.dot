@@ -1,0 +1,23 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      input [label="不可撤销历史 + 待执行序列 + 目标"];
+      replay [label="逐步重放并定位首个问题"];
+      valid [label="已经满足？",shape=diamond];
+      unchanged [label="返回原计划与零成本"];
+      base [label="事项前置与历史可重放？",shape=diamond];
+      search [label="优先队列 Dijkstra 搜索\n状态：序列位置、事实、已完成动作集合"];
+      edit [label="保留 0 / 插入 1 / 删除 1 / 替换 1\n动作须通过同一规则引擎"];
+      goal [label="出队状态：序列末尾\n且目标满足？",shape=diamond];
+      check [label="完整重放复验通过？",shape=diamond];
+      output [label="编辑项、总成本、修复序列及验证结果"];
+      stopped [label="信息不足 / 无解 / 搜索截断\n最多 5000 个状态",style="rounded,dashed"];
+      input -> replay -> valid; valid -> unchanged [label="是"]; valid -> base [label="否"];
+      base -> search [label="是"]; base -> stopped [label="否"];
+      search -> goal; goal -> edit [label="否"]; edit -> search [label="候选入队"];
+      goal -> check [label="是"]; check -> edit [label="否"];
+      search -> stopped [label="边界/知识限制"]; check -> output [label="是"];
+
+}

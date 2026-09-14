@@ -1,0 +1,8 @@
+digraph G {
+graph [rankdir=TB, bgcolor="white", fontname="Microsoft YaHei", fontsize=16, pad=0.18, nodesep=0.35, ranksep=0.42, splines=polyline, dpi=220];
+node [shape=box, style="rounded,filled", fillcolor="#f5f8fa", color="#43576a", fontname="Microsoft YaHei", fontsize=14, margin="0.16,0.10", penwidth=1.1];
+edge [fontname="Microsoft YaHei", fontsize=11, color="#526575", arrowsize=0.65];
+
+      blank [label="此处插入正式实验结果图\n\n当前未开展科研效果评测\n完成实验后替换图像并更新图题和分析",width=6.3,height=2.4,style="rounded,dashed"];
+
+}
