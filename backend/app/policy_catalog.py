@@ -538,6 +538,8 @@ def make_catalog(units):
         for item in fields:
             if item["id"] not in {f["id"] for f in matter["fields"]}:
                 matter["fields"].append(deepcopy(item))
+            if item["role"] == "policy":
+                matter["policy_parameters"].setdefault(item["id"], None)
         matter["rule_ids"].append(id)
         if unit["id"] not in matter["source_unit_ids"]:
             matter["source_unit_ids"].append(unit["id"])
@@ -596,6 +598,7 @@ def make_catalog(units):
         "housing_deposit_ratio": "housing_deposit_remit",
         "housing_ratio_equal": "housing_deposit_remit",
         "pregnancy_night_work": "women_protection_arrange_work",
+        "housing_existing_loan_amount_limit": "housing_existing_loan_final",
     }
     action_ids = {a["id"] for a in actions}
     for rule in rules:
@@ -681,6 +684,10 @@ def make_catalog(units):
             )
             matter["gaps"].append(
                 "库内贷款细则与办事指南存在还贷比例、灵缴倍数/系数及退休年龄口径差异；分别保留版本，不合并为当前标准。"
+            )
+        if matter["id"] == "housing_existing_loan":
+            matter["gaps"].append(
+                "第七条最高限额单项核查缺少申请日公布的政策参数，保留未知；需核对申请地域、日期及适用政策后由知识配置维护。该条件绑定终审记录，不阻断材料准备或申请提交；尚未合并房龄比例、还款能力、缴存时间余额及千元取整为最终可贷金额。"
             )
         unknown = sorted(
             {
@@ -1305,6 +1312,27 @@ def _reviewed_rules(add):
 
 
 def _housing_loan_conditions(add):
+    add(
+        "housing_existing_loan_amount_limit",
+        "housing_existing_loan",
+        "存量房贷款金额不高于申请时最高限额（单项条件）",
+        ("24_", "第七条", "1.不高于申请时规定的贷款最高限额", "武汉存量房"),
+        {
+            "op": "lte",
+            "left": {"field": "requested_loan"},
+            "right": {"field": "loan_maximum_at_application"},
+        },
+        [
+            field("requested_loan", "拟申请公积金贷款金额", "number", unit="元"),
+            field(
+                "loan_maximum_at_application",
+                "申请时公布的存量房公积金贷款最高限额",
+                "number",
+                role="policy",
+                unit="元",
+            ),
+        ],
+    )
     """Check enumerated application conditions; external standards remain distinct facts."""
     common = [
         (field("age", "借款人周岁年龄", "number"), cmp("age", "gte", 18)),

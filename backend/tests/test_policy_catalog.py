@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -359,6 +360,11 @@ LOAN_FACTS = {
 }
 ARTICLE_CASES.extend(
     [
+        (
+            "housing_existing_loan_amount_limit",
+            {"requested_loan": 200000, "loan_maximum_at_application": 200000},
+            {"requested_loan": 200001},
+        ),
         ("housing_new_loan_eligibility", LOAN_FACTS, {"loan_contract_months": 13}),
         ("housing_existing_loan_eligibility", LOAN_FACTS, {"loan_house_age": 31}),
         ("housing_foreign_loan_eligibility", LOAN_FACTS, {"loan_already_transferred": True}),
@@ -580,3 +586,70 @@ def test_source_review_manifest_covers_exactly_the_36_policy_versions(corpus):
         manifest["sources"][source] == sha256((data / source).read_bytes()).hexdigest()
         for source in sources
     )
+
+
+def test_real_loan_policy_parameter_is_distinct_from_missing_materials(corpus):
+    matter = next(m for m in corpus["matters"] if m["id"] == "housing_existing_loan")
+    fields = {f["id"]: f for f in matter["fields"]}
+    assert "loan_maximum_at_application" in fields
+    assert fields["loan_maximum_at_application"]["role"] == "policy"
+    assert fields["loan_maximum_at_application"]["unit"] == "元"
+    assert fields["loan_maximum_at_application"]["mutable"] is False
+    assert matter["policy_parameters"]["loan_maximum_at_application"] is None
+    request = _existing_loan_request()
+    apply = check_workflow(corpus, request | {"steps": request["steps"][:2]})
+    assert apply["status"] == "satisfied"
+    missing_materials = deepcopy(request)
+    del missing_materials["facts"]["housing_existing_loan_prepare_documents"]
+    missing = check_workflow(corpus, missing_materials)
+    assert missing["status"] == "unknown"
+    assert any(
+        "housing_existing_loan_prepare_documents" in c["missing_fields"] for c in missing["checks"]
+    )
+    assert not any("loan_maximum_at_application" in c["missing_fields"] for c in missing["checks"])
+    unknown_limit = check_workflow(corpus, request)
+    assert unknown_limit["status"] == "unknown"
+    assert unknown_limit["state"]["loan_maximum_at_application"] is None
+    assert any(
+        "loan_maximum_at_application" in c["missing_fields"] for c in unknown_limit["checks"]
+    )
+    assert "housing_existing_loan_final" not in unknown_limit["completed_steps"]
+
+
+def _existing_loan_request():
+    return {
+        "matter_id": "housing_existing_loan",
+        "region": "武汉",
+        "as_of": "2025-06-01",
+        "steps": [
+            "housing_existing_loan_" + key
+            for key in ["prepare", "apply", "initial", "secondary", "final"]
+        ],
+        "facts": LOAN_FACTS
+        | {
+            "direct_relative_transaction": False,
+            "housing_existing_loan_prepare_documents": [
+                "身份证及户籍证明",
+                "婚姻状况证明",
+                "购房合同及首付款凭证",
+            ],
+            "housing_existing_loan_loan_extra_materials": True,
+            "housing_existing_loan_initial_confirmed": True,
+            "housing_existing_loan_secondary_confirmed": True,
+            "housing_existing_loan_final_confirmed": True,
+            "requested_loan": 200000,
+            # A request cannot fill a missing policy parameter, even with a numeric value.
+            "loan_maximum_at_application": 99999999,
+        },
+    }
+
+
+@pytest.mark.parametrize("limit,expected", [(200000, "satisfied"), (199999, "violated")])
+def test_real_loan_limit_uses_policy_configuration_not_request(corpus, limit, expected):
+    configured = deepcopy(corpus)
+    matter = next(m for m in configured["matters"] if m["id"] == "housing_existing_loan")
+    # Test-only configured values exercise the expression; they are not asserted policy rates.
+    matter["policy_parameters"]["loan_maximum_at_application"] = limit
+    result = check_workflow(configured, _existing_loan_request())
+    assert result["status"] == expected
+    assert result["state"]["loan_maximum_at_application"] == limit
