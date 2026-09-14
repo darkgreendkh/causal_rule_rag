@@ -381,6 +381,32 @@ def test_shared_roles_have_unique_edge_ids():
     assert len(edge_ids) == len(set(edge_ids))
 
 
+def test_different_regulations_may_have_different_document_numbers():
+    corpus = graph_corpus()
+    corpus["units"][0].update(title="配套实施细则", version="细则文号")
+    corpus["rules"][0]["scope"].update(title="上位管理办法", version="办法文号")
+    graph = build_graph(corpus, get_profile("full"), {("u1", "r1"): 1})
+    rule = next(n for n in graph["nodes"] if n["id"] == "r1")
+    assert rule["rpc_components"]["temporal"] == 1
+
+
+def test_same_regulation_conflicting_versions_do_not_fuse():
+    corpus = graph_corpus()
+    corpus["units"][0]["version"] = "旧文号"
+    corpus["rules"][0]["scope"].update(title=corpus["units"][0]["title"], version="新文号")
+    graph = build_graph(corpus, get_profile("without_rpc"), {("u1", "r1"): 1})
+    assert not any(e["source"] == "u1" and e["target"] == "r1" for e in graph["edges"])
+
+
+def test_missing_regulation_identity_does_not_invent_version_conflict():
+    corpus = graph_corpus()
+    corpus["units"][0]["version"] = "来源文号"
+    corpus["rules"][0]["scope"]["version"] = "规则文号"
+    graph = build_graph(corpus, get_profile("full"), {("u1", "r1"): 1})
+    rule = next(n for n in graph["nodes"] if n["id"] == "r1")
+    assert rule["version_check"] == "unknown"
+
+
 def test_unknown_profile_is_rejected():
     with pytest.raises(ValueError):
         get_profile("not-a-method")

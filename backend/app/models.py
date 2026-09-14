@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
@@ -31,6 +31,7 @@ class DocumentStatus(StrEnum):
 class RetrievalMode(StrEnum):
     VECTOR = "vector"
     HYBRID = "hybrid"
+    CAUSAL = "causal"
 
 
 class SourceChannel(StrEnum):
@@ -108,21 +109,33 @@ class QAResponse(BaseModel):
     mode: RetrievalMode
     sources: list[Source]
     graph_paths: list[GraphPath]
+    causal_paths: list[dict] = Field(default_factory=list)
+    rule_checks: list[dict] = Field(default_factory=list)
+    communities: list[dict] = Field(default_factory=list)
+    knowledge_gaps: list[str] = Field(default_factory=list)
+    run_id: str | None = None
 
 
 class ConversationTurn(BaseModel):
     question: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)
     ]
-    answer: Annotated[
-        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=12000)
-    ]
+    answer: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=12000)]
 
 
 class QARequest(BaseModel):
-    question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+    question: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)
+    ]
     mode: RetrievalMode
     history: list[ConversationTurn] = Field(default_factory=list, max_length=3)
+    matter_id: str | None = None
+    region: str | None = None
+    as_of: str | None = None
+    facts: dict = Field(default_factory=dict)
+    profile: str = "full"
+    dataset: Literal["uploaded", "research"] = "uploaded"
+    completed_steps: list[str] = Field(default_factory=list, max_length=100)
 
 
 class GraphNode(BaseModel):

@@ -273,8 +273,11 @@ def test_condition_check_rule_allows_preparation_but_still_guards_submission():
 def test_repair_base_does_not_apply_submission_checks_before_preparation():
     corpus, request = fixture()
     rule = corpus["rules"][0]
-    rule.update(action_id="submit", purpose="condition_check",
-                condition={"all": [rule["condition"], {"field": "ready"}]})
+    rule.update(
+        action_id="submit",
+        purpose="condition_check",
+        condition={"all": [rule["condition"], {"field": "ready"}]},
+    )
     request["facts"]["ready"] = False
     request["steps"] = []
     assert check_workflow(corpus, request)["status"] == "violated"
@@ -292,3 +295,13 @@ def test_repair_does_not_report_a_failed_empty_fact_check_as_repaired():
     result = repair_workflow(corpus, request)
     assert result["checked"]["status"] == "satisfied"
     assert result["steps"] == ["prepare"]
+
+
+def test_deleted_predecessor_is_a_knowledge_gap_not_an_applicant_error():
+    corpus, request = fixture()
+    corpus["actions"] = [a for a in corpus["actions"] if a["id"] != "prepare"]
+    request["steps"] = ["submit"]
+    checked = check_workflow(corpus, request)
+    assert checked["status"] == "unknown"
+    assert any("prepare" in gap for gap in checked["knowledge_gaps"])
+    assert repair_workflow(corpus, request)["status"] == "unknown"

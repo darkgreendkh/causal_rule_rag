@@ -10,13 +10,16 @@ from neo4j.exceptions import Neo4jError
 from app.api.documents import create_documents_router
 from app.api.graph import create_graph_router
 from app.api.qa import create_qa_router
-from app.config import Settings
+from app.api.research import create_research_router
+from app.config import PROJECT_ROOT, Settings
 from app.database import Neo4jStore
 from app.embedding import SentenceTransformerEmbedder
 from app.extraction import GraphExtractor
 from app.ingestion import DocumentService
 from app.llm import OpenAIChatModel, UnavailableChatModel
 from app.qa import QAService
+from app.research import ResearchService
+from app.research_store import ResearchRepository
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,9 +29,12 @@ def create_app(
     settings: Settings | None = None,
     document_service: DocumentService | None = None,
     qa_service: QAService | None = None,
+    research_service: ResearchService | None = None,
 ) -> FastAPI:
     app_settings = settings or Settings()
     app_store = store or Neo4jStore(app_settings)
+    embedder = None
+    chat_model = None
     if document_service is None or qa_service is None:
         chat_model = (
             OpenAIChatModel(
@@ -49,6 +55,26 @@ def create_app(
             )
         if qa_service is None:
             qa_service = QAService(app_store, embedder, chat_model)
+    if research_service is None:
+        # Construction is lazy; existing injected test stores do not need research methods.
+        research_service = ResearchService(
+            ResearchRepository(
+                getattr(app_store, "_driver", None), PROJECT_ROOT / ".runtime/research"
+            ),
+            embedder or SentenceTransformerEmbedder(app_settings.embedding_model),
+            chat_model
+            or (
+                OpenAIChatModel(
+                    app_settings.llm_model,
+                    base_url=app_settings.llm_base_url,
+                    api_key=app_settings.llm_api_key,
+                )
+                if app_settings.llm_configured
+                else UnavailableChatModel()
+            ),
+            PROJECT_ROOT / "data",
+            PROJECT_ROOT / ".runtime/research",
+        )
 
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
@@ -69,6 +95,7 @@ def create_app(
     application.state.store = app_store
     application.state.document_service = document_service
     application.state.qa_service = qa_service
+    application.state.research_service = research_service
     application.state.initialization_error = None
     application.add_middleware(
         CORSMiddleware,
@@ -89,8 +116,9 @@ def create_app(
         }
 
     application.include_router(create_documents_router(document_service, app_store))
-    application.include_router(create_graph_router(app_store))
-    application.include_router(create_qa_router(qa_service))
+    application.include_router(create_graph_router(app_store, research_service))
+    application.include_router(create_qa_router(qa_service, research_service))
+    application.include_router(create_research_router(research_service))
     return application
 
 

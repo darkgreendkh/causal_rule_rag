@@ -12,10 +12,8 @@ def corpus():
     return build_corpus(DATA)
 
 
-def test_every_policy_and_pdf_is_loaded_with_complete_coverage(corpus):
+def test_every_policy_is_loaded_with_complete_coverage(corpus):
     assert len(corpus["documents"]) == 36
-    assert len({r["source_path"] for r in corpus["references"]}) == 8
-    assert all(r["page"] >= 1 and r["text"].strip() for r in corpus["references"])
     units = {u["id"]: u for u in corpus["units"]}
     assert len(units) == len(corpus["units"])
     assert {c["unit_id"] for c in corpus["coverage"]} == set(units)
@@ -23,6 +21,14 @@ def test_every_policy_and_pdf_is_loaded_with_complete_coverage(corpus):
     assert all(
         c["matter_ids"] if c["disposition"] == "mapped" else c["reason"] for c in corpus["coverage"]
     )
+
+
+@pytest.mark.skipif(
+    not (DATA / "research_papers").exists(), reason="User-provided publications are kept local"
+)
+def test_all_eight_local_publications_keep_pdf_page_locations(corpus):
+    assert len({r["source_path"] for r in corpus["references"]}) == 8
+    assert all(r["page"] >= 1 and r["text"].strip() for r in corpus["references"])
 
 
 @pytest.mark.parametrize("prefix,count", [("13_", 2), ("14_", 2), ("15_", 3), ("24_", 2)])

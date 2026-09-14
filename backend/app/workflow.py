@@ -45,8 +45,9 @@ def _scope(scope, request):
 
 
 class _Context:
-    def __init__(self, corpus, request):
+    def __init__(self, corpus, request, *, unknown_completed=False):
         self.request = request
+        self.unknown_completed = unknown_completed
         self.matter = next((m for m in corpus["matters"] if m["id"] == request["matter_id"]), None)
         if self.matter is None:
             raise ValueError("事项不存在")
@@ -89,13 +90,27 @@ class _Context:
 
     def condition(self, expression, state, completed):
         errors = validate_expression(expression, set(self.fields))
+        pending = [expression] if not errors else []
+        while pending:
+            node = pending.pop()
+            if "completed" in node and node["completed"] not in self.actions:
+                errors.append(f"前置动作定义缺失：{node['completed']}")
+            for value in node.values():
+                if isinstance(value, dict):
+                    pending.append(value)
+                elif isinstance(value, list):
+                    pending.extend(item for item in value if isinstance(item, dict))
         if errors:
             return {"status": "unknown", "missing_fields": [], "reasons": errors}
-        return evaluate(expression, state, completed)
+        return evaluate(expression, state, completed, unknown_completed=self.unknown_completed)
 
     def rules_for(self, action_id, state, completed, include_condition_checks=False):
-        relevant = [r for r in self.rules if r.get("action_id") in (None, action_id)
-                    or (include_condition_checks and r.get("purpose") == "condition_check")]
+        relevant = [
+            r
+            for r in self.rules
+            if r.get("action_id") in (None, action_id)
+            or (include_condition_checks and r.get("purpose") == "condition_check")
+        ]
         checks, gaps = [], list(self.input_gaps)
         active = [r for r in relevant if r["status"] == "active"]
         if not any(r["status"] == "active" for r in self.rules):
@@ -136,6 +151,8 @@ class _Context:
                 result = {"status": "unknown", "missing_fields": [], "reasons": [gap]}
             else:
                 result = self.condition(rule["condition"], state, completed)
+            if result["status"] == "unknown":
+                gaps.extend(result["reasons"])
             checks.append(
                 dict(
                     result,
@@ -173,6 +190,8 @@ class _Context:
             )
             return "violated", checks, gaps, state, "action"
         result = self.condition(action["preconditions"], state, completed)
+        if result["status"] == "unknown":
+            gaps.extend(result["reasons"])
         checks.append(
             dict(result, rule_id=None, label=action["label"], evidence=action.get("evidence", []))
         )
@@ -285,12 +304,17 @@ def _check_workflow(corpus: dict, request: dict, *, include_condition_checks=Fal
     goal = context.goal(state, completed)
     if first_error is None and include_condition_checks and not request.get("steps"):
         condition_checks, condition_gaps = context.rules_for(
-            None, state, completed, include_condition_checks=True)
+            None, state, completed, include_condition_checks=True
+        )
         checks.extend(condition_checks)
         gaps.extend(condition_gaps)
         if _status(condition_checks) != "satisfied":
-            first_error = {"index": -1, "action_id": None, "kind": "rule",
-                           "message": "事实核查条件未满足或缺少资料"}
+            first_error = {
+                "index": -1,
+                "action_id": None,
+                "kind": "rule",
+                "message": "事实核查条件未满足或缺少资料",
+            }
     status = _status(checks + ([goal] if first_error is None else []))
     if first_error is None and goal["status"] != "satisfied":
         first_error = {

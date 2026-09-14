@@ -65,12 +65,26 @@ def _references(expression: dict, key: str) -> set[str]:
     return found
 
 
+def _version_check(left: dict, right: dict) -> str:
+    titles = [
+        str(scope.get("title") or "").removeprefix("修订说明：").removeprefix("修订说明:")
+        for scope in (left, right)
+    ]
+    if not all(titles) or not left.get("region") or not right.get("region"):
+        return "unknown"
+    if titles[0] != titles[1] or left["region"] != right["region"]:
+        return "not_comparable"
+    if not left.get("version") or not right.get("version"):
+        return "unknown"
+    return "consistent" if left["version"] == right["version"] else "conflict"
+
+
 def _scope_compatible(left: dict, right: dict) -> bool:
     """Historical intervals may overlap even when current validity is unverified."""
     regions = {s.get("region") for s in (left, right)} - {None, "", "全国"}
     if len(regions) > 1 and regions != {"湖北", "武汉"}:
         return False
-    if left.get("version") and right.get("version") and left["version"] != right["version"]:
+    if _version_check(left, right) == "conflict":
         return False
     starts, ends = [], []
     try:
@@ -129,6 +143,17 @@ def build_graph(corpus: dict, profile: dict, similarities: dict | None = None) -
             and e.get("quote")
             and e["quote"] in units[e["unit_id"]]["text"]
         ]
+
+    def version_check(scope, evidence):
+        checks = {_version_check(scope, units[e["unit_id"]]) for e in evidence}
+        return next(
+            (
+                status
+                for status in ("conflict", "unknown", "consistent", "not_comparable")
+                if status in checks
+            ),
+            "unknown",
+        )
 
     def components(owner, expression, scope, evidence, action_id=None):
         mid = owner["matter_id"]
@@ -264,7 +289,7 @@ def build_graph(corpus: dict, profile: dict, similarities: dict | None = None) -
             unit["id"], f"{unit['title']} {unit['article']}", "ARTICLE", "macro", evidence=evidence
         )
         nodes[unit["id"]]["scope"] = {
-            key: unit.get(key) for key in ("region", "valid_from", "valid_to", "version")
+            key: unit.get(key) for key in ("region", "valid_from", "valid_to", "version", "title")
         }
         edge(unit["document_id"], unit["id"], "CONTAINS", evidence, structural_weight=1.0)
     for matter in matters.values():
@@ -311,7 +336,7 @@ def build_graph(corpus: dict, profile: dict, similarities: dict | None = None) -
         scope = action.get("scope") or (
             {
                 key: units[evidence[0]["unit_id"]].get(key)
-                for key in ("region", "valid_from", "valid_to", "version")
+                for key in ("region", "valid_from", "valid_to", "version", "title")
             }
             if evidence
             else {}
@@ -341,6 +366,7 @@ def build_graph(corpus: dict, profile: dict, similarities: dict | None = None) -
             "rpc_components": parts,
             "compatible": compatible,
             "status": status,
+            "version_check": version_check(scope, evidence),
         }
         action_metadata[aid] = metadata
         node(aid, action["label"], "ACTION", "micro", mid, evidence)
@@ -399,6 +425,7 @@ def build_graph(corpus: dict, profile: dict, similarities: dict | None = None) -
             "rpc_components": parts,
             "compatible": compatible,
             "status": rule["status"],
+            "version_check": version_check(rule.get("scope", {}), evidence),
         }
         node(rid, rule["label"], "RULE", "micro", mid, evidence)
         nodes[rid].update(rule_ids=[rid], scope=rule.get("scope", {}), **metadata)

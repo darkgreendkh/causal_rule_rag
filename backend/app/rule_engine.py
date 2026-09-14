@@ -78,7 +78,13 @@ def validate_expression(expression: dict, field_ids: set[str] | None) -> list[st
     return list(dict.fromkeys(errors))
 
 
-def evaluate(expression: dict, facts: dict, completed: list[str] | None = None) -> dict:
+def evaluate(
+    expression: dict,
+    facts: dict,
+    completed: list[str] | None = None,
+    *,
+    unknown_completed: bool = False,
+) -> dict:
     errors = validate_expression(expression, None)
     if errors:
         return {"status": "unknown", "missing_fields": [], "reasons": errors}
@@ -92,7 +98,11 @@ def evaluate(expression: dict, facts: dict, completed: list[str] | None = None) 
                 return UNKNOWN, {key}, [f"缺少字段：{key}"]
             return facts[key], set(), []
         if "completed" in node:
-            return node["completed"] in (completed or []), set(), []
+            if node["completed"] in (completed or []):
+                return True, set(), []
+            if unknown_completed:
+                return UNKNOWN, set(), [f"缺少前置动作完成信息：{node['completed']}"]
+            return False, set(), []
         if "not" in node:
             value, missing, reasons = truth(node["not"])
             return (not value if value is not UNKNOWN else UNKNOWN), missing, reasons
