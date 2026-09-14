@@ -1,0 +1,91 @@
+{
+  "reference_cases": 63,
+  "unsolved_matters": 9,
+  "step_defects": 283,
+  "fact_defects": 57,
+  "defect_kinds": {
+    "delete": 98,
+    "premature": 98,
+    "swap": 87
+  },
+  "localisation": {
+    "total": 283,
+    "exact": 283,
+    "detected": 283,
+    "by_kind": {
+      "delete": {
+        "total": 98,
+        "detected": 98,
+        "exact": 98
+      },
+      "swap": {
+        "total": 87,
+        "detected": 87,
+        "exact": 87
+      },
+      "premature": {
+        "total": 98,
+        "detected": 98,
+        "exact": 98
+      }
+    }
+  },
+  "methods": {
+    "仅规则检查": {
+      "legal_repair_rate": 0.0,
+      "within_injected_bound_rate": 0.0,
+      "mean_edit_cost": null,
+      "mean_edit_cost_by_kind": {},
+      "mean_explored_states": 0.0,
+      "truncated_rate": 0.0,
+      "mean_seconds": 0.0,
+      "missing_fact_alternative_plan": 0,
+      "missing_fact_fabricated_plan": 0
+    },
+    "截断后贪心补全": {
+      "legal_repair_rate": 1.0,
+      "within_injected_bound_rate": 0.8233,
+      "mean_edit_cost": 1.463,
+      "mean_edit_cost_by_kind": {
+        "delete": 1.143,
+        "premature": 1.439,
+        "swap": 1.851
+      },
+      "mean_explored_states": 0.0,
+      "truncated_rate": 0.0,
+      "mean_seconds": 0.0017,
+      "missing_fact_alternative_plan": 5,
+      "missing_fact_fabricated_plan": 0
+    },
+    "重新规划（最短路径类比）": {
+      "legal_repair_rate": 1.0,
+      "within_injected_bound_rate": 0.7986,
+      "mean_edit_cost": 1.509,
+      "mean_edit_cost_by_kind": {
+        "delete": 1.224,
+        "premature": 1.49,
+        "swap": 1.851
+      },
+      "mean_explored_states": 0.0,
+      "truncated_rate": 0.0,
+      "mean_seconds": 0.0019,
+      "missing_fact_alternative_plan": 5,
+      "missing_fact_fabricated_plan": 0
+    },
+    "受约束序列修复": {
+      "legal_repair_rate": 1.0,
+      "within_injected_bound_rate": 1.0,
+      "mean_edit_cost": 1.0,
+      "mean_edit_cost_by_kind": {
+        "delete": 1.0,
+        "premature": 1.0,
+        "swap": 1.0
+      },
+      "mean_explored_states": 9.7,
+      "truncated_rate": 0.0,
+      "mean_seconds": 0.0034,
+      "missing_fact_alternative_plan": 5,
+      "missing_fact_fabricated_plan": 0
+    }
+  }
+}

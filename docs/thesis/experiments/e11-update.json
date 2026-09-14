@@ -1,0 +1,110 @@
+{
+  "baseline_units": 1481,
+  "baseline_rules": 288,
+  "baseline_edges": 7801,
+  "scenarios": [
+    {
+      "document": "guojia_shebao/基本法律（最高效力层级）/中华人民共和国社会保险法.txt",
+      "removed_units": 111,
+      "rules_after": 284,
+      "rules_removed": 4,
+      "matters_after": 114,
+      "matters_no_longer_checkable": 38,
+      "edges_after": 7451,
+      "edges_removed": 350,
+      "residual_stale": {
+        "rules": 0,
+        "actions": 0,
+        "edges": 0,
+        "nodes": 0
+      },
+      "rebuild_seconds": 0.31
+    },
+    {
+      "document": "guojia_shebao/工伤保险/工伤保险条例.txt",
+      "removed_units": 102,
+      "rules_after": 288,
+      "rules_removed": 0,
+      "matters_after": 115,
+      "matters_no_longer_checkable": 14,
+      "edges_after": 7518,
+      "edges_removed": 283,
+      "residual_stale": {
+        "rules": 0,
+        "actions": 0,
+        "edges": 0,
+        "nodes": 0
+      },
+      "rebuild_seconds": 0.22
+    },
+    {
+      "document": "wuhan_shebao/15_住房公积金_武汉市灵活就业人员住房公积金缴存使用管理办法及实施细则.txt",
+      "removed_units": 86,
+      "rules_after": 271,
+      "rules_removed": 17,
+      "matters_after": 114,
+      "matters_no_longer_checkable": 15,
+      "edges_after": 7368,
+      "edges_removed": 433,
+      "residual_stale": {
+        "rules": 0,
+        "actions": 0,
+        "edges": 0,
+        "nodes": 0
+      },
+      "rebuild_seconds": 0.35
+    },
+    {
+      "document": "wuhan_shebao/13_住房公积金_武汉住房公积金缴存管理办法和实施细则.txt",
+      "removed_units": 79,
+      "rules_after": 268,
+      "rules_removed": 20,
+      "matters_after": 115,
+      "matters_no_longer_checkable": 13,
+      "edges_after": 7360,
+      "edges_removed": 441,
+      "residual_stale": {
+        "rules": 0,
+        "actions": 0,
+        "edges": 0,
+        "nodes": 0
+      },
+      "rebuild_seconds": 0.22
+    },
+    {
+      "document": "wuhan_shebao/10_工伤保险_工伤保险条例.txt",
+      "removed_units": 76,
+      "rules_after": 288,
+      "rules_removed": 0,
+      "matters_after": 115,
+      "matters_no_longer_checkable": 14,
+      "edges_after": 7593,
+      "edges_removed": 208,
+      "residual_stale": {
+        "rules": 0,
+        "actions": 0,
+        "edges": 0,
+        "nodes": 0
+      },
+      "rebuild_seconds": 0.26
+    },
+    {
+      "document": "guojia_shebao/综合性文件/社会保险经办条例.txt",
+      "removed_units": 71,
+      "rules_after": 209,
+      "rules_removed": 79,
+      "matters_after": 115,
+      "matters_no_longer_checkable": 30,
+      "edges_after": 6815,
+      "edges_removed": 986,
+      "residual_stale": {
+        "rules": 0,
+        "actions": 0,
+        "edges": 0,
+        "nodes": 0
+      },
+      "rebuild_seconds": 0.2
+    }
+  ],
+  "total_residual_stale": 0
+}

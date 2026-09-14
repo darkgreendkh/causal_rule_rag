@@ -1,0 +1,15 @@
+{
+  "run_at": "2026-09-14T11:07:12+00:00",
+  "commit": "f9eb427",
+  "python": "3.12.13",
+  "nodes": 4503,
+  "edges": 7801,
+  "reference_cases": {
+    "multi_action_matters": 72,
+    "solved": 63,
+    "solved_ratio": 0.875,
+    "unsolved_status": {
+      "unknown": 9
+    }
+  }
+}

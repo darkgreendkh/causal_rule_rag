@@ -1,0 +1,68 @@
+{
+  "nodes": 4503,
+  "edges": 7801,
+  "seeds": [
+    42,
+    7,
+    13,
+    101,
+    2024
+  ],
+  "hierarchy_records": 2341,
+  "unsplittable_records": 6,
+  "levels": [
+    1,
+    2,
+    3
+  ],
+  "methods": {
+    "Louvain": {
+      "modularity": 0.764,
+      "communities": 56,
+      "largest_share": 0.121,
+      "median_size": 19,
+      "strong_edge_keep_rate": 0.9995,
+      "strong_edges": 2074,
+      "matter_purity": 0.5368,
+      "category_mixed_communities": 9,
+      "seconds": 0.014,
+      "seed_nmi": 0.8699
+    },
+    "Leiden": {
+      "modularity": 0.7788,
+      "communities": 66,
+      "largest_share": 0.0871,
+      "median_size": 22,
+      "strong_edge_keep_rate": 0.999,
+      "strong_edges": 2074,
+      "matter_purity": 0.5861,
+      "category_mixed_communities": 11,
+      "seconds": 0.023,
+      "seed_nmi": 0.8891
+    },
+    "语义权重Leiden": {
+      "modularity": 0.0313,
+      "communities": 4215,
+      "largest_share": 0.0056,
+      "median_size": 1,
+      "strong_edge_keep_rate": 0.0,
+      "strong_edges": 2074,
+      "matter_purity": 0.9719,
+      "category_mixed_communities": 6,
+      "seconds": 0.007,
+      "seed_nmi": 1.0
+    },
+    "约束层次社区（本文）": {
+      "modularity": 0.7666,
+      "communities": 51,
+      "largest_share": 0.1368,
+      "median_size": 9,
+      "strong_edge_keep_rate": 1.0,
+      "strong_edges": 2074,
+      "matter_purity": 0.3195,
+      "category_mixed_communities": 11,
+      "seconds": 0.144,
+      "seed_nmi": 0.9268
+    }
+  }
+}

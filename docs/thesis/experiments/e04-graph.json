@@ -1,0 +1,91 @@
+{
+  "profiles": {
+    "full": {
+      "nodes": 4503,
+      "edges": 7801,
+      "macro_nodes": 2590,
+      "micro_nodes": 1913,
+      "cross_layer_edges": 521,
+      "isolated_node_rate": 0.0,
+      "mean_rpc": 0.3326,
+      "incompatible_edge_rate": 0.0,
+      "candidate_edge_rate": 0.6674,
+      "communities": 2341,
+      "executable_matters": 77,
+      "active_rules": 288,
+      "build_seconds": 0.3
+    },
+    "without_rpc": {
+      "nodes": 4503,
+      "edges": 7801,
+      "macro_nodes": 2590,
+      "micro_nodes": 1913,
+      "cross_layer_edges": 521,
+      "isolated_node_rate": 0.0,
+      "mean_rpc": 0.3326,
+      "incompatible_edge_rate": 0.0,
+      "candidate_edge_rate": 0.6674,
+      "communities": 2341,
+      "executable_matters": 77,
+      "active_rules": 288,
+      "build_seconds": 0.3
+    },
+    "without_scs": {
+      "nodes": 4503,
+      "edges": 7801,
+      "macro_nodes": 2590,
+      "micro_nodes": 1913,
+      "cross_layer_edges": 521,
+      "isolated_node_rate": 0.0,
+      "mean_rpc": 0.3326,
+      "incompatible_edge_rate": 0.0,
+      "candidate_edge_rate": 0.6674,
+      "communities": 2341,
+      "executable_matters": 77,
+      "active_rules": 288,
+      "build_seconds": 0.32
+    },
+    "without_macro": {
+      "nodes": 1913,
+      "edges": 2074,
+      "macro_nodes": 0,
+      "micro_nodes": 1913,
+      "cross_layer_edges": 0,
+      "isolated_node_rate": 0.0,
+      "mean_rpc": 1.0,
+      "incompatible_edge_rate": 0.0,
+      "candidate_edge_rate": 0.0,
+      "communities": 90,
+      "executable_matters": 77,
+      "active_rules": 288,
+      "build_seconds": 0.29
+    },
+    "without_micro": {
+      "nodes": 2590,
+      "edges": 5206,
+      "macro_nodes": 2590,
+      "micro_nodes": 0,
+      "cross_layer_edges": 0,
+      "isolated_node_rate": 0.0,
+      "mean_rpc": 0.0,
+      "incompatible_edge_rate": 0.0,
+      "candidate_edge_rate": 1.0,
+      "communities": 2343,
+      "executable_matters": 72,
+      "active_rules": 288,
+      "build_seconds": 0.26
+    }
+  },
+  "threshold_binding": {
+    "rpc_threshold": 0.7,
+    "scs_threshold": 0.7,
+    "causal_edges": 2074,
+    "causal_rpc_below_threshold": 0,
+    "distinct_rpc_values": [
+      1.0
+    ],
+    "cross_layer_edges": 521,
+    "cross_scs_below_threshold": 0,
+    "min_cross_scs": 0.9226
+  }
+}
