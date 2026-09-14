@@ -241,4 +241,22 @@ $env:RUN_RESEARCH_NEO4J_TESTS='1'
 
 实现架构、边界与论文方法映射见 [架构](docs/architecture.md)、[功能](docs/features.md)、
 [技术决策](docs/decisions.md) 和 [方法映射](docs/method-implementation-mapping.md)。
-论文源文、Word 与可编辑图源位于 `docs/thesis/`。本次仅完成工程验收，科研实验结果留空。
+论文源文、Word 与可编辑图源位于 `docs/thesis/`。
+
+## 实验
+
+实验按金标准来源分两层，取舍、样本量与排期见 [实验计划](docs/experiment-plan.md)。
+第一层（E04—E07、E09—E11）的金标准由语料结构或缺陷注入程序化确定，已实现在
+`backend/experiments/` 并完成运行；第二层（E01—E03、E08）需要独立人工标注，尚未开展。
+
+第一层离线运行，只读 `data/` 与 `.runtime/research/embeddings.json` 的向量缓存，
+不连 Neo4j、不调用生成模型、不写入正式知识库：
+
+```powershell
+cd backend
+$env:PYTHONUTF8='1'; $env:PYTHONPATH='.'; $env:HF_HOME='../.runtime/huggingface'
+./.venv/Scripts/python.exe -m experiments.run_all
+```
+
+结果 JSON 与汇总表写入 [docs/thesis/experiments/](docs/thesis/experiments/)；
+第六章结果图由 `docs/thesis/generate_experiment_figures.py` 按同一批 JSON 重绘。

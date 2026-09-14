@@ -8,7 +8,7 @@
 
 最后，构建证据问答、流程检查和编辑修复的交互闭环。系统逐步重放办理计划，定位首个不满足或未知的步骤；在保持不可变事实与既有历史的条件下，使用包含序列位置的状态空间搜索寻找声明成本下的修复方案，并对结果完整重放验证。原型基于Windows环境实现前后端联动，保留基础检索模式、知识版本和研究配置，按条款公开事项支持范围与资料缺口。
 
-本文以36份政策和8篇研究文献组织研究资料，建立后续对比、消融、参数与误差分析的实验协议。本初稿不预填科研实验结果，方法效果及相应统计结论留待按照实验协议完成验证。
+本文以36份政策和8篇研究文献组织研究资料，并按金标准来源把实验分为两层。第一层的金标准由语料结构与缺陷注入程序化确定，七组实验已经完成：双层结构的两个图层各自必要；依赖约束使强依赖边保持率达到100%、种子间稳定性由0.889提升至0.927，代价是模块度由0.7788降至0.7666；有向约束检索在限定事项时把nDCG@8由0.639提升至0.816，但在不限定事项的开放查询上召回由0.629降至0.454；受约束序列修复在283个注入缺陷上全部返回合法计划，平均编辑代价1.000，优于两个贪心基线的1.463与1.509；移除来源文件后六个重建场景均无残留过期引用。实验同时否定了两项设计预期：构图侧的RPC与SCS阈值在本语料上从未拒绝候选，路径语义评分项使证据完整率由0.812降至0.675。第二层需要独立人工标注的条款抽取与问答评价尚未开展，本文因此不对回答正确性与规范解释质量作出结论。
 
 **关键词：** 智能审批；检索增强生成；知识图谱；规则约束；流程修复
 
@@ -20,6 +20,8 @@ A dual-layer knowledge representation organizes matters, regulations, provisions
 
 A constraint-preserving retrieval method contracts reviewed, high-confidence dependency groups before applying Leiden community detection and subsequently restores original node membership. Directed candidate paths are ranked using semantic relevance, RPC, and normalized branching entropy. Necessary evidence is completed for conjunctive conditions. Causal enhancement here refers to source-supported normative dependencies and state transitions; it does not identify real-world intervention effects or calibrated causal probabilities.
 
-The prototype combines evidence-grounded question answering with ordered workflow replay, bounded sequence repair, and next-action previews. Repair preserves immutable facts and completed history and minimizes the declared edit cost within the specified action space and search boundary. The Windows implementation retains baseline retrieval modes, versioned knowledge snapshots, configuration records, and explicit capability gaps. The study organizes 36 policy documents and eight research publications and specifies subsequent comparative, ablation, parameter, and error-analysis experiments. Research results and empirical conclusions are intentionally left unfilled in this draft.
+The prototype combines evidence-grounded question answering with ordered workflow replay, bounded sequence repair, and next-action previews. Repair preserves immutable facts and completed history and minimizes the declared edit cost within the specified action space and search boundary.
+
+Experiments are separated by the provenance of their ground truth. Seven experiments whose ground truth is derived programmatically from corpus structure or from injected plan defects have been completed on 36 policy documents. Dependency-constrained community detection preserves all strong dependency edges and raises seed stability from 0.889 to 0.927, at the cost of modularity (0.7788 to 0.7666). Directed constrained retrieval raises nDCG@8 from 0.639 to 0.816 when the query is bound to a service matter, but lowers recall from 0.629 to 0.454 on open queries. Bounded sequence repair returns a legal plan for all 283 injected defects at a mean unit edit cost of 1.000, against 1.463 and 1.509 for two greedy baselines. Two design expectations are not supported by the data: the RPC and SCS screening thresholds reject no candidate on this corpus, and the semantic term in path scoring lowers evidence completeness from 0.812 to 0.675. Experiments requiring independent human annotation, namely provision-level extraction and answer quality, remain to be conducted, so no claim is made about answer correctness or normative interpretation.
 
 **Keywords:** approval assistance; retrieval-augmented generation; knowledge graph; rule constraints; workflow repair

@@ -1,13 +1,13 @@
 {
-  "main_text_hanzi": 37475,
+  "main_text_hanzi": 44639,
   "chapters": {
-    "01-introduction.md": 5179,
+    "01-introduction.md": 5377,
     "02-background.md": 5262,
-    "03-dual-graph.md": 5873,
-    "04-causal-retrieval.md": 6329,
-    "05-system-workflow.md": 6759,
-    "06-experiments.md": 6226,
-    "07-conclusion.md": 1847
+    "03-dual-graph.md": 6264,
+    "04-causal-retrieval.md": 7061,
+    "05-system-workflow.md": 6928,
+    "06-experiments.md": 11180,
+    "07-conclusion.md": 2567
   },
   "references": [
     {
@@ -140,7 +140,23 @@
       "url": "https://researchportal.tuni.fi/en/publications/cumulated-gain-based-evaluation-of-ir-techniques"
     }
   ],
-  "research_results": "not_run",
-  "experimental_figures": 11,
+  "research_results": "automatic_layer_complete_annotation_layer_pending",
+  "experimental_figures": {
+    "generated": [
+      "fig6-10-next-step.png",
+      "fig6-11-update.png",
+      "fig6-4-graph-ablation.png",
+      "fig6-5-community.png",
+      "fig6-6-retrieval.png",
+      "fig6-7-path-ablation.png",
+      "fig6-9-repair-cost.png"
+    ],
+    "pending_annotation": [
+      "6-1",
+      "6-2",
+      "6-3",
+      "6-8"
+    ]
+  },
   "counting": "Unicode Han characters; excludes headings, tables, figure captions and fenced algorithms"
 }

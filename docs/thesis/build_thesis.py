@@ -40,6 +40,16 @@ def image_md(number, suffix, caption):
     return f'![图{number} {caption}](figures/fig{number}-{suffix}.png){{width=15cm}}'
 
 
+def result_figure(number, caption):
+    """Use the generated chart when the experiment has run, else the pending placeholder."""
+    caption = caption.strip().rstrip('。')
+    drawn = sorted((ROOT / 'figures').glob(f'fig6-{number}-*.png'))
+    if drawn:
+        return f'![图6-{number} {caption}](figures/{drawn[0].name}){{width=14cm}}'
+    return (f'![图6-{number} {caption}（待标注）]'
+            '(figures/experiment-results-placeholder.png){width=12cm}')
+
+
 def assemble():
     refs = json.loads((ROOT / 'references.json').read_text('utf-8'))
     local = ROOT / 'references-local.json'
@@ -64,8 +74,7 @@ def assemble():
                 text = re.sub(r'^图1-1 研究技术路线图[^\n]*', lambda _: replacement, text, flags=re.M)
         text = re.sub(r'<!-- SCREENSHOT:(\w+) (.*?) -->',
                       lambda m: f'![{m[2]}](screenshots/{m[1]}.png){{width=15cm}}', text)
-        text = re.sub(r'^图6-(\d+) ([^\n]*?)(?:占位)[^\n]*',
-                      lambda m: f'![图6-{m[1]} {m[2]}（待实验）](figures/experiment-results-placeholder.png){{width=12cm}}',
+        text = re.sub(r'^图6-(\d+) ([^\n；]*)[^\n]*', lambda m: result_figure(m[1], m[2]),
                       text, flags=re.M)
         if path.name.startswith('05-'):
             architecture = '![图5-1 系统实现架构](figures/fig5-1-architecture.png)'
@@ -95,7 +104,10 @@ def assemble():
     (ROOT / (STEM + '.md')).write_text(content, 'utf-8')
     audit = {'main_text_hanzi': sum(counts.values()), 'chapters': counts,
              'references': [{'number': i, 'key': k, **refs[k]} for i, k in enumerate(keys, 1)],
-             'research_results': 'not_run', 'experimental_figures': 11,
+             'research_results': 'automatic_layer_complete_annotation_layer_pending',
+             'experimental_figures': {
+                 'generated': sorted(p.name for p in (ROOT / 'figures').glob('fig6-*.png')),
+                 'pending_annotation': ['6-1', '6-2', '6-3', '6-8']},
              'counting': 'Unicode Han characters; excludes headings, tables, figure captions and fenced algorithms'}
     (ROOT / 'document-audit.json').write_text(json.dumps(audit, ensure_ascii=False, indent=2), 'utf-8')
     print(json.dumps({'main_text_hanzi': audit['main_text_hanzi'], 'references': len(keys)}))
@@ -180,6 +192,21 @@ def field(paragraph, instruction):
 def postprocess(path):
     doc = Document(path)
     doc.settings.odd_and_even_pages_header_footer = False
+    # Pandoc keeps the template accent colour on the linked heading character styles.
+    for style in doc.styles.element.findall(qn('w:style')):
+        name = style.find(qn('w:name'))
+        label = name.get(qn('w:val')) if name is not None else ''
+        if not re.match(r'(heading|Heading) ?[1-6]|标题 ?[1-6]', label or ''):
+            continue
+        rpr = style.find(qn('w:rPr'))
+        if rpr is None:
+            rpr = OxmlElement('w:rPr')
+            style.append(rpr)
+        for tag in rpr.findall(qn('w:color')):
+            rpr.remove(tag)
+        black = OxmlElement('w:color')
+        black.set(qn('w:val'), '000000')
+        rpr.insert(0, black)
     first = doc.paragraphs[0]
     for text, size, before, after in [
         ('硕士学位论文', 26, 60, 65),
