@@ -125,3 +125,9 @@ def test_nonfinite_arithmetic_inputs_and_result_are_unknown():
     }
     assert evaluate(expression, {"x": float("inf")})["status"] == "unknown"
     assert evaluate(expression, {"x": 1e308})["status"] == "unknown"
+
+
+def test_large_finite_integers_do_not_require_float_conversion():
+    expression = {"op": "gt", "left": {"field": "x"}, "right": {"value": 10**400}}
+    assert not validate_expression(expression, {"x"})
+    assert evaluate(expression, {"x": 10**401})["status"] == "satisfied"

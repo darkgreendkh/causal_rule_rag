@@ -228,3 +228,67 @@ def test_repair_cannot_manufacture_missing_approval_or_modify_policy():
     assert result["edits"] == []
     corpus["actions"][0]["effects"]["minimum"] = 0
     assert check_workflow(corpus, request)["state"]["minimum"] == 18
+
+
+def test_large_finite_integer_fact_does_not_crash_validation():
+    corpus, request = fixture()
+    request["facts"]["age"] = 10**400
+    assert check_workflow(corpus, request)["status"] == "satisfied"
+
+
+def test_disabled_necessary_action_rule_cannot_be_bypassed_by_global_rule():
+    corpus, request = fixture()
+    corpus["rules"].append(
+        dict(corpus["rules"][0], id="specific", action_id="submit", status="disabled")
+    )
+    checked = check_workflow(corpus, request)
+    assert checked["status"] == "unknown"
+    assert checked["knowledge_gaps"]
+    assert checked["state"]["sent"] is False
+
+
+def test_rejected_candidate_does_not_block_remaining_active_action_support():
+    corpus, request = fixture()
+    specific = dict(corpus["rules"][0], id="specific", action_id="submit")
+    corpus["rules"].extend([specific, dict(specific, id="candidate", status="rejected")])
+    assert check_workflow(corpus, request)["status"] == "satisfied"
+    specific["status"] = "rejected"
+    assert check_workflow(corpus, request)["status"] == "unknown"
+
+
+def test_condition_check_rule_allows_preparation_but_still_guards_submission():
+    corpus, request = fixture()
+    corpus["rules"][0].update(action_id="submit", purpose="condition_check")
+    request.update(steps=["prepare"], goal=None)
+    request["facts"]["age"] = 17
+    assert check_workflow(corpus, request)["status"] == "satisfied"
+    request["steps"].append("submit")
+    assert check_workflow(corpus, request)["status"] == "violated"
+    request["steps"] = []
+    assert check_workflow(corpus, request)["status"] == "violated"
+    candidates = next_steps(corpus, request)["candidates"]
+    assert next(c for c in candidates if c["action_id"] == "prepare")["status"] == "satisfied"
+
+
+def test_repair_base_does_not_apply_submission_checks_before_preparation():
+    corpus, request = fixture()
+    rule = corpus["rules"][0]
+    rule.update(action_id="submit", purpose="condition_check",
+                condition={"all": [rule["condition"], {"field": "ready"}]})
+    request["facts"]["ready"] = False
+    request["steps"] = []
+    assert check_workflow(corpus, request)["status"] == "violated"
+    result = repair_workflow(corpus, request)
+    assert result["status"] == "repaired"
+    assert result["steps"] == ["prepare", "submit"]
+    assert result["cost"] == 2
+
+
+def test_repair_does_not_report_a_failed_empty_fact_check_as_repaired():
+    corpus, request = fixture()
+    corpus["rules"][0].update(action_id="submit", purpose="condition_check")
+    request["facts"]["age"] = 17
+    request.update(steps=["submit"], goal=None)
+    result = repair_workflow(corpus, request)
+    assert result["checked"]["status"] == "satisfied"
+    assert result["steps"] == ["prepare"]

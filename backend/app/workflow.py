@@ -77,7 +77,7 @@ class _Context:
         if kind == "number":
             from math import isfinite
 
-            return type(value) in (int, float) and isfinite(value)
+            return type(value) is int or (type(value) is float and isfinite(value))
         if kind == "date":
             try:
                 return isinstance(value, str) and date.fromisoformat(value).isoformat() == value
@@ -93,12 +93,29 @@ class _Context:
             return {"status": "unknown", "missing_fields": [], "reasons": errors}
         return evaluate(expression, state, completed)
 
-    def rules_for(self, action_id, state, completed):
-        relevant = [r for r in self.rules if r.get("action_id") in (None, action_id)]
+    def rules_for(self, action_id, state, completed, include_condition_checks=False):
+        relevant = [r for r in self.rules if r.get("action_id") in (None, action_id)
+                    or (include_condition_checks and r.get("purpose") == "condition_check")]
         checks, gaps = [], list(self.input_gaps)
         active = [r for r in relevant if r["status"] == "active"]
         if not any(r["status"] == "active" for r in self.rules):
             gaps.append("该事项或动作没有已启用的可执行规则")
+        specific = [
+            r for r in relevant if action_id is not None and r.get("action_id") == action_id
+        ]
+        unsupported = specific and not any(r["status"] == "active" for r in specific)
+        if any(r["status"] == "disabled" for r in relevant) or unsupported:
+            gaps.append("动作必要规则已停用或缺少已启用的动作专属规则")
+            checks.append(
+                {
+                    "rule_id": None,
+                    "label": "规则覆盖",
+                    "status": "unknown",
+                    "missing_fields": [],
+                    "reasons": [gaps[-1]],
+                    "evidence": [],
+                }
+            )
         pending = [r for r in relevant if r["status"] == "candidate"]
         if pending:
             gaps.append("相关候选规则尚未审核启用")
@@ -221,6 +238,10 @@ class _Context:
 
 
 def check_workflow(corpus: dict, request: dict) -> dict:
+    return _check_workflow(corpus, request, include_condition_checks=True)
+
+
+def _check_workflow(corpus: dict, request: dict, *, include_condition_checks=False) -> dict:
     context = _Context(corpus, request)
     state, completed = deepcopy(context.facts), []
     checks, gaps = context.rules_for(None, state, completed)
@@ -262,6 +283,14 @@ def check_workflow(corpus: dict, request: dict) -> dict:
             if first_error:
                 break
     goal = context.goal(state, completed)
+    if first_error is None and include_condition_checks and not request.get("steps"):
+        condition_checks, condition_gaps = context.rules_for(
+            None, state, completed, include_condition_checks=True)
+        checks.extend(condition_checks)
+        gaps.extend(condition_gaps)
+        if _status(condition_checks) != "satisfied":
+            first_error = {"index": -1, "action_id": None, "kind": "rule",
+                           "message": "事实核查条件未满足或缺少资料"}
     status = _status(checks + ([goal] if first_error is None else []))
     if first_error is None and goal["status"] != "satisfied":
         first_error = {
@@ -308,7 +337,7 @@ def repair_workflow(corpus: dict, request: dict, max_states: int = 5000) -> dict
     if checked["status"] == "satisfied":
         return result("already_valid", cost=0)
     base_request = dict(request, steps=[], goal=None)
-    base = check_workflow(corpus, base_request)
+    base = _check_workflow(corpus, base_request)
     if base["status"] != "satisfied":
         return result("unknown" if base["status"] == "unknown" else "unreachable")
     context = _Context(corpus, request)
@@ -340,7 +369,9 @@ def repair_workflow(corpus: dict, request: dict, max_states: int = 5000) -> dict
             goal = context.goal(state, completed)
             if goal["status"] == "satisfied":
                 final = check_workflow(corpus, dict(request, steps=steps))
-                return result("repaired", steps, edits, cost, explored, final)
+                if final["status"] == "satisfied":
+                    return result("repaired", steps, edits, cost, explored, final)
+                unknown_seen |= final["status"] == "unknown"
             unknown_seen |= goal["status"] == "unknown"
         if position < len(original):
             push(
@@ -391,7 +422,7 @@ def repair_workflow(corpus: dict, request: dict, max_states: int = 5000) -> dict
 
 
 def next_steps(corpus: dict, request: dict) -> dict:
-    checked = check_workflow(corpus, dict(request, goal=None))
+    checked = _check_workflow(corpus, dict(request, goal=None))
     if checked["status"] != "satisfied":
         return {"status": checked["status"], "candidates": [], "state": checked["state"]}
     context = _Context(corpus, request)

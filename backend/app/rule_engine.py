@@ -19,7 +19,7 @@ UNKNOWN = object()
 
 
 def _number(value):
-    return type(value) in (int, float) and math.isfinite(value)
+    return type(value) is int or (type(value) is float and math.isfinite(value))
 
 
 def validate_expression(expression: dict, field_ids: set[str] | None) -> list[str]:
