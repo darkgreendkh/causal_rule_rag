@@ -45,7 +45,7 @@ LLM JSON 三元组抽取 ──────────→ Neo4j Entity / RELATE
 
 ## 环境要求
 
-- macOS/Linux
+- macOS/Linux；本机 Windows 启动方式见下文
 - Python 3.12
 - [uv](https://docs.astral.sh/uv/)
 - Node.js 22 与 pnpm 10
@@ -53,6 +53,30 @@ LLM JSON 三元组抽取 ──────────→ Neo4j Entity / RELATE
 - 一个支持 Chat Completions 的 OpenAI 兼容大模型接口
 
 ## 启动
+
+### 本机 Windows 环境
+
+本机已在 D 盘安装依赖，并复用 `D:/backend/neo4j-community-5.26.8`、
+`D:/backend/Java/jdk-21` 和 `D:/tools/nodejs`。填写根目录 `.env` 后，
+在项目目录执行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start-windows.ps1
+```
+
+脚本在后台启动 Neo4j、后端和前端，访问 <http://localhost:5173>。
+已有监听端口会跳过启动。日志位于 `.runtime/logs/`；运行环境和数据位置如下：
+
+- Python 3.12：`D:/uv/python`；后端虚拟环境：`backend/.venv/`。
+- pnpm：`.runtime/tools/`；前端依赖：`frontend/node_modules/`。
+- BGE-M3 模型缓存：`.runtime/huggingface/`。
+- 本项目独立 Neo4j 数据：`.runtime/neo4j/data/`，配置：`.runtime/neo4j/conf/`。
+- 上传原文件：`data/uploads/`；Neo4j 用户名 `neo4j`，初始密码 `change-me`。
+
+`.runtime/` 已被 Git 忽略，但包含数据库和模型，不应作为普通临时目录删除。
+此启动脚本对应本机已有安装路径。修改 `.env` 后需重启后端。
+如需在终端前台运行单个服务，可使用 `-Service neo4j`、`-Service backend`
+或 `-Service frontend`，然后通过 `Ctrl+C` 停止该服务。
 
 ### 1. 配置环境变量
 

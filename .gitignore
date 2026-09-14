@@ -1,5 +1,6 @@
 .DS_Store
 .env
+.runtime/
 backend/.env
 backend/.venv/
 backend/.pytest_cache/
