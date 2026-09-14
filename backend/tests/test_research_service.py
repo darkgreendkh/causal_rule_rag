@@ -231,3 +231,20 @@ def test_review_is_bound_to_expression_and_source_revision(tmp_path):
     source["rules"][0]["condition"]["all"][0]["right"]["value"] = 21
     s.build("full")
     assert s.snapshot()["corpus"]["rules"][0]["status"] == "candidate"
+
+
+def test_causal_answer_reports_each_rule_check_once(tmp_path):
+    s = service(tmp_path)
+    s.build("full")
+    result = s.answer(
+        {
+            "question": "如何申请",
+            "mode": "causal",
+            "matter_id": "m",
+            "region": "武汉",
+            "as_of": "2024-01-01",
+            "facts": {"age": 20},
+        }
+    )
+    seen = [(c["rule_id"], c["status"], tuple(c["reasons"])) for c in result["rule_checks"]]
+    assert len(seen) == len(set(seen))

@@ -71,6 +71,6 @@ agents不编辑彼此文件；共享models/main/api/qa由root编辑。前端只�
 - QARequest增加 `dataset=uploaded|research`，默认uploaded保持旧客户端；研究资料库内vector、hybrid和causal使用同一解析语料，分别执行文本检索、普通宏观邻接扩展和规则因果路径检索。
 - `purpose=condition_check` 的规则用于空步骤纯条件核查，也仍受action_id绑定；准备步骤不受提交阶段资格条件提前阻断。真实流程在对应动作执行时校验这些条件，不能跳过必要资格。
 - 路径增加 `rule_status`：unknown路径仅表示可供解释的证据依赖，不能声称已达到目标状态。
-- rule_checks包含`path_id`与`used_for_answer`：False表示仅诊断；必要原文未完整装配到来源预算时，不把其判定交给生成模型。完整表达式核查补齐同一owner的AND条件，按路径顺序推进，缺前缀或后缀未验证均明确标记。
+- rule_checks按（规则、状态、原因）去重后返回，同一规则在多条路径上重复出现只报一次，`used_for_answer`取各次的或值；包含`path_id`与`used_for_answer`：False表示仅诊断；必要原文未完整装配到来源预算时，不把其判定交给生成模型。完整表达式核查补齐同一owner的AND条件，按路径顺序推进，缺前缀或后缀未验证均明确标记。
 - 贷款事项的`loan_maximum_at_application`属于policy角色，单位元，知识配置默认未知。请求同名facts值被忽略，仅采用matter.policy_parameters；`requested_loan`为申请人事实。
 - `goal_satisfied` 可以是true/false/null；下一步候选preview_state可以为null。流程状态不等同于真实机关审批结论。

@@ -586,8 +586,14 @@ class ResearchService:
             )
             if len(selected_paths) >= 5:
                 break
+        # The same rule recurs on many paths; report each distinct result once.
+        distinct = {}
         for check in checks.values():
             check["used_for_answer"] = check["path_id"] in supported_path_ids
+            key = (check["rule_id"], check["status"], tuple(check["reasons"]))
+            kept = distinct.setdefault(key, check)
+            kept["used_for_answer"] = kept["used_for_answer"] or check["used_for_answer"]
+        checks = distinct
         if not evidence_ids:
             # Retrieval-only sources remain useful when executable evidence has a stated gap.
             candidates = [

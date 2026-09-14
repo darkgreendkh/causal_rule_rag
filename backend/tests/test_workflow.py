@@ -305,3 +305,10 @@ def test_deleted_predecessor_is_a_knowledge_gap_not_an_applicant_error():
     assert checked["status"] == "unknown"
     assert any("prepare" in gap for gap in checked["knowledge_gaps"])
     assert repair_workflow(corpus, request)["status"] == "unknown"
+
+
+def test_next_steps_excludes_actions_already_completed():
+    corpus, request = fixture()
+    request.update(steps=[], completed_steps=["prepare"], goal=None)
+    candidates = next_steps(corpus, request)["candidates"]
+    assert [c["action_id"] for c in candidates] == ["submit", "approve"]

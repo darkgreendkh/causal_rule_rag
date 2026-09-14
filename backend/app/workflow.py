@@ -452,6 +452,9 @@ def next_steps(corpus: dict, request: dict) -> dict:
     context = _Context(corpus, request)
     candidates = []
     for action in context.actions.values():
+        # Effects are constant assignments, so repeating a completed action cannot advance state.
+        if action["id"] in checked["completed_steps"]:
+            continue
         status, checks, _, updated, _ = context.attempt(
             action["id"], checked["state"], checked["completed_steps"]
         )
