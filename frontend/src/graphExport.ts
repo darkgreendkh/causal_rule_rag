@@ -1,11 +1,11 @@
-import type { GraphEdge, GraphResponse } from './types'
+import type { GraphEdge, GraphNode, GraphResponse } from './types'
 
 interface GraphPosition {
   x: number
   y: number
 }
 
-interface GraphExportNode {
+interface GraphExportNode extends GraphNode {
   id: string
   label: string
   type: string
@@ -32,6 +32,7 @@ export function buildGraphExport(
 ): GraphExportData {
   return {
     nodes: graph.nodes.map((node) => ({
+      ...node,
       id: node.id,
       label: node.label,
       type: node.type,
@@ -60,10 +61,18 @@ export function serializeGraphMl(data: GraphExportData): string {
       <data key="source_chunk_ids">${escapeXml(JSON.stringify(node.source_chunk_ids))}</data>
       <data key="x">${node.position.x}</data>
       <data key="y">${node.position.y}</data>
+      ${node.layer ? `<data key="layer">${escapeXml(node.layer)}</data>` : ''}
+      ${node.community_id ? `<data key="community_id">${escapeXml(node.community_id)}</data>` : ''}
     </node>`)
   const edges = data.edges.map((edge) => `    <edge id="${escapeXml(edge.id)}" source="${escapeXml(edge.source)}" target="${escapeXml(edge.target)}">
       <data key="predicate">${escapeXml(edge.predicate)}</data>
       <data key="source_chunk_id">${escapeXml(edge.source_chunk_id)}</data>
+      ${edge.rpc !== undefined ? `<data key="rpc">${edge.rpc}</data>` : ''}
+      ${edge.scs !== undefined ? `<data key="scs">${edge.scs}</data>` : ''}
+      ${edge.layer ? `<data key="edge_layer">${escapeXml(edge.layer)}</data>` : ''}
+      ${edge.type ? `<data key="relation_type">${escapeXml(edge.type)}</data>` : ''}
+      ${edge.rule_ids ? `<data key="rule_ids">${escapeXml(JSON.stringify(edge.rule_ids))}</data>` : ''}
+      ${edge.evidence ? `<data key="evidence">${escapeXml(JSON.stringify(edge.evidence))}</data>` : ''}
     </edge>`)
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -76,6 +85,14 @@ export function serializeGraphMl(data: GraphExportData): string {
   <key id="y" for="node" attr.name="y" attr.type="double"/>
   <key id="predicate" for="edge" attr.name="predicate" attr.type="string"/>
   <key id="source_chunk_id" for="edge" attr.name="source_chunk_id" attr.type="string"/>
+  <key id="layer" for="node" attr.name="layer" attr.type="string"/>
+  <key id="community_id" for="node" attr.name="community_id" attr.type="string"/>
+  <key id="rpc" for="edge" attr.name="rpc" attr.type="double"/>
+  <key id="scs" for="edge" attr.name="scs" attr.type="double"/>
+  <key id="edge_layer" for="edge" attr.name="layer" attr.type="string"/>
+  <key id="relation_type" for="edge" attr.name="relation_type" attr.type="string"/>
+  <key id="rule_ids" for="edge" attr.name="rule_ids" attr.type="string"/>
+  <key id="evidence" for="edge" attr.name="evidence" attr.type="string"/>
   <graph id="knowledge-graph" edgedefault="directed">
 ${nodes.join('\n')}
 ${edges.join('\n')}

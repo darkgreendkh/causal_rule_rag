@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react'
 import type { Page } from '../App'
 import { listDocuments, loadGraph } from '../api'
 import type { DocumentStatus, DocumentSummary, GraphResponse } from '../types'
+import ResearchOverview from '../components/ResearchOverview'
 
 const STATUS_LABELS: Record<DocumentStatus, string> = {
   PENDING: '等待处理',
@@ -46,15 +47,16 @@ export default function OverviewPage({ onNavigate }: { onNavigate: (page: Page) 
 
   return (
     <section className="overview-page">
+      <ResearchOverview />
       {error && <p className="error-banner">{error}</p>}
 
       <div className="stat-grid" aria-live="polite">
-        <StatCard icon={Files} label="文档总数" value={loading ? '—' : documents.length} />
-        <StatCard icon={CheckCircle2} label="已完成文档" value={loading ? '—' : completed} />
-        <StatCard icon={FileStack} label="分块总数" value={loading ? '—' : chunkCount} />
+        <StatCard icon={Files} label="上传文档" value={loading ? '—' : documents.length} />
+        <StatCard icon={CheckCircle2} label="上传处理完成" value={loading ? '—' : completed} />
+        <StatCard icon={FileStack} label="上传文档分块" value={loading ? '—' : chunkCount} />
         <StatCard
           icon={Network}
-          label="可视图谱"
+          label="上传图谱预览"
           value={loading ? '—' : `${graph.nodes.length}${graph.truncated ? '+' : ''}`}
           detail={loading ? undefined : `${graph.edges.length} 条关系`}
         />

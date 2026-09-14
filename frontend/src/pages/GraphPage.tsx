@@ -2,10 +2,11 @@ import cytoscape, { type Core, type ElementDefinition } from 'cytoscape'
 import { ChevronDown, Download, Network, Search, WandSparkles } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { listDocuments, loadGraph } from '../api'
+import { listDocuments, listMatters, loadGraph, loadResearchGraph, loadResearchUnit } from '../api'
+import { EvidenceList } from '../components/ResearchEvidence'
 import { buildGraphExport, serializeGraphMl, truncateGraphLabel } from '../graphExport'
 import { groupSourceChunks } from '../sourceChunks'
-import type { DocumentSummary, GraphEdge, GraphNode, GraphResponse } from '../types'
+import type { DocumentSummary, Evidence, GraphEdge, GraphNode, GraphResponse, Matter } from '../types'
 
 type SelectedElement =
   | { kind: 'node'; value: GraphNode }
@@ -41,6 +42,12 @@ export default function GraphPage() {
   const exportMenuRef = useRef<HTMLDetailsElement>(null)
   const [documents, setDocuments] = useState<DocumentSummary[]>([])
   const [documentId, setDocumentId] = useState('')
+  const [dataset, setDataset] = useState('research')
+  const [layer, setLayer] = useState('fused')
+  const [matters, setMatters] = useState<Matter[]>([])
+  const [matterId, setMatterId] = useState('')
+  const [communityId, setCommunityId] = useState('')
+  const [nodeEvidence, setNodeEvidence] = useState<Evidence[]>([])
   const [search, setSearch] = useState('')
   const [graph, setGraph] = useState<GraphResponse>({ nodes: [], edges: [], truncated: false })
   const [selected, setSelected] = useState<SelectedElement>(null)
@@ -48,6 +55,7 @@ export default function GraphPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    void listMatters().then(setMatters).catch((err: unknown) => setError(err instanceof Error ? err.message : '事项加载失败'))
     void listDocuments()
       .then((items) => setDocuments(items.filter((item) => item.status === 'COMPLETED')))
       .catch(() => setDocuments([]))
@@ -65,17 +73,31 @@ export default function GraphPage() {
   }, [])
 
   useEffect(() => {
+    let active = true
     setLoading(true)
     setError('')
     setSelected(null)
-    void loadGraph(documentId || null)
-      .then(setGraph)
+    void (dataset === 'research' ? loadResearchGraph(layer, matterId, communityId) : loadGraph(documentId || null))
+      .then((data) => { if (active) setGraph(data) })
       .catch((requestError: unknown) => {
+        if (!active) return
         setGraph({ nodes: [], edges: [], truncated: false })
         setError(requestError instanceof Error ? requestError.message : '图谱加载失败')
       })
-      .finally(() => setLoading(false))
-  }, [documentId])
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [documentId, dataset, layer, matterId, communityId])
+
+  useEffect(() => {
+    setNodeEvidence([])
+    if (dataset !== 'research' || selected?.kind !== 'node') return
+    if (selected.value.evidence?.length) { setNodeEvidence(selected.value.evidence); return }
+    let active = true
+    void Promise.all(selected.value.source_chunk_ids.map(loadResearchUnit)).then((units) => {
+      if (active) setNodeEvidence(units.map((unit) => ({ unit_id: unit.id, title: unit.title, article: unit.article, source_path: unit.source_path, quote: unit.text })))
+    }).catch((err: unknown) => { if (active) setError(err instanceof Error ? err.message : '节点来源加载失败') })
+    return () => { active = false }
+  }, [selected, dataset])
 
   const visibleGraph = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase()
@@ -120,6 +142,7 @@ export default function GraphPage() {
           displayLabel: truncateGraphLabel(node.label),
           type: node.type,
           color: ENTITY_COLORS[node.type] ?? ENTITY_COLORS.OTHER,
+          layer: node.layer ?? '',
         },
       })),
       ...visibleGraph.edges.map((edge) => ({
@@ -164,6 +187,10 @@ export default function GraphPage() {
             'border-color': '#ffffff',
             'overlay-opacity': 0,
           },
+        },
+        {
+          selector: 'node[layer = "macro"]',
+          style: { shape: 'round-rectangle' },
         },
         {
           selector: 'edge',
@@ -307,8 +334,16 @@ export default function GraphPage() {
 
   return (
     <section className="graph-page">
+      <div className="panel research-context"><div className="research-toolbar">
+        <label>知识来源<select value={dataset} onChange={(event) => setDataset(event.target.value)}><option value="research">研究知识库</option><option value="legacy">上传文档图谱</option></select></label>
+        {dataset === 'research' && <>
+          <label>图谱层次<select aria-label="图谱层次" value={layer} onChange={(event) => { setLayer(event.target.value); setCommunityId('') }}><option value="fused">双层融合</option><option value="macro">宏观结构</option><option value="micro">微观因果</option></select></label>
+          <label>办事事项<select aria-label="办事事项" value={matterId} onChange={(event) => { setMatterId(event.target.value); setCommunityId('') }}><option value="">全部事项</option>{matters.map((matter) => <option key={matter.id} value={matter.id}>{matter.name}</option>)}</select></label>
+          <label>社区<select aria-label="社区" value={communityId} onChange={(event) => setCommunityId(event.target.value)}><option value="">全部社区</option>{graph.communities?.map((community) => <option key={community.id} value={community.id}>{community.label ?? community.id}{community.unsplittable ? '（约束组不可拆分）' : ''}</option>)}</select></label>
+        </>}
+      </div>{graph.build_id && dataset === 'research' && <small className="muted">知识版本：{graph.build_id} · 箭头表示原始关系方向</small>}</div>
       <div className="panel graph-toolbar">
-        <label>
+        {dataset !== 'research' && <label>
           <span>文档范围</span>
           <select value={documentId} onChange={(event) => setDocumentId(event.target.value)}>
             <option value="">全部已完成文档</option>
@@ -316,7 +351,7 @@ export default function GraphPage() {
               <option value={document.id} key={document.id}>{document.filename}</option>
             ))}
           </select>
-        </label>
+        </label>}
         <label className="search-field">
           <Search size={16} />
           <input
@@ -384,9 +419,11 @@ export default function GraphPage() {
             <>
               <span className="type-pill">{selected.value.type}</span>
               <h2>{selected.value.label}</h2>
+              {selected.value.layer && <p className="muted">{selected.value.layer === 'macro' ? '宏观层' : '微观层'} · {selected.value.community_id ?? '未分配社区'}</p>}
               <p className="detail-label">来源依据</p>
+              {dataset === 'research' && <EvidenceList evidence={nodeEvidence} />}
               <ul className="source-id-list">
-                {sourceChunkGroups.map((group) => (
+                {dataset !== 'research' && sourceChunkGroups.map((group) => (
                   <li key={group.documentId}>
                     {group.filename} · 分块 {group.chunkIndexes.join('、')}
                   </li>
@@ -395,13 +432,16 @@ export default function GraphPage() {
             </>
           ) : (
             <>
-              <span className="type-pill">RELATES_TO</span>
+              <span className="type-pill">{selected.value.type ?? 'RELATES_TO'}</span>
               <h2>{selected.value.predicate}</h2>
               <dl className="edge-detail">
-                <dt>主体</dt><dd>{selected.value.source}</dd>
-                <dt>客体</dt><dd>{selected.value.target}</dd>
+                <dt>主体</dt><dd>{graph.nodes.find((node) => node.id === selected.value.source)?.label ?? selected.value.source}</dd>
+                <dt>客体</dt><dd>{graph.nodes.find((node) => node.id === selected.value.target)?.label ?? selected.value.target}</dd>
                 <dt>来源 Chunk</dt><dd>{selected.value.source_chunk_id}</dd>
+                {selected.value.rpc !== undefined && <><dt>RPC</dt><dd>{selected.value.rpc.toFixed(3)}</dd></>}
+                {selected.value.scs !== undefined && <><dt>SCS</dt><dd>{selected.value.scs.toFixed(3)}</dd></>}
               </dl>
+              <EvidenceList evidence={selected.value.evidence} />
             </>
           )}
         </aside>

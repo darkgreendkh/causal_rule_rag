@@ -1,4 +1,4 @@
-import type { QAResponse } from './types'
+import type { QAResponse, ResearchContext } from './types'
 
 export const LEGACY_STORAGE_KEY = 'causal-rule-rag:conversation:v1'
 export const STORAGE_KEY = 'causal-rule-rag:conversations:v2'
@@ -9,6 +9,7 @@ export interface ConversationItem {
   question: string
   createdAt: string
   result: QAResponse
+  context?: ResearchContext
 }
 
 export interface Conversation {
@@ -214,7 +215,7 @@ function isConversationItem(value: unknown): value is ConversationItem {
     isTimestamp(item.createdAt) &&
     !!item.result &&
     typeof item.result.answer === 'string' &&
-    (item.result.mode === 'vector' || item.result.mode === 'hybrid') &&
+    (item.result.mode === 'vector' || item.result.mode === 'hybrid' || item.result.mode === 'causal') &&
     Array.isArray(item.result.sources) &&
     Array.isArray(item.result.graph_paths)
   )

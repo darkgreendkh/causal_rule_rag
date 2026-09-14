@@ -8,6 +8,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { deleteDocument, listChunks, listDocuments, uploadDocument } from '../api'
 import type { ChunkView, DocumentStatus, DocumentSummary } from '../types'
+import RulesPanel from '../components/RulesPanel'
+import ResearchDocuments from '../components/ResearchDocuments'
 
 const STATUS_LABELS: Record<DocumentStatus, string> = {
   PENDING: '等待处理',
@@ -37,6 +39,7 @@ export default function DocumentsPage() {
   const [loadingChunks, setLoadingChunks] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState('')
+  const [researchRevision, setResearchRevision] = useState(0)
 
   const refreshDocuments = useCallback(async () => {
     try {
@@ -130,6 +133,8 @@ export default function DocumentsPage() {
 
   return (
     <section className="documents-page">
+      <ResearchDocuments onResearchChange={() => setResearchRevision((current) => current + 1)} />
+      <RulesPanel revision={researchRevision} />
       <form className="panel compact-upload" onSubmit={handleUpload}>
         <label
           className={dragging ? 'drop-zone dragging' : 'drop-zone'}

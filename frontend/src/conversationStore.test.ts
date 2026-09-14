@@ -23,6 +23,19 @@ const result: QAResponse = {
   graph_paths: [],
 }
 
+test('loads causal and original conversation results without discarding either', () => {
+  const oldTurn = turn('old', '原问题', '2026-08-30T09:00:00.000Z')
+  const causalTurn = { ...turn('causal', '因果问题', '2026-08-30T09:01:00.000Z'),
+    result: { ...result, mode: 'causal' as const, causal_paths: [], knowledge_gaps: ['待核对'] },
+    context: { dataset: 'research' as const, region: '武汉', as_of: '2026-08-30', completed_steps: ['query_records'], facts: { confirmed: false } } }
+  const store = appendConversationTurn(appendConversationTurn(
+    { activeConversationId: null, conversations: [] }, oldTurn, 'c1',
+  ), causalTurn, 'unused')
+  const storage = new MemoryStorage()
+  saveConversationStore(storage, store, false)
+  assert.deepEqual(loadConversationStore(storage, () => 'unused').store, store)
+})
+
 function turn(id: string, question: string, createdAt: string): ConversationItem {
   return { id, question, createdAt, result }
 }

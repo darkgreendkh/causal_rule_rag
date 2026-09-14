@@ -35,6 +35,21 @@ const graph: GraphResponse = {
   truncated: false,
 }
 
+test('exports research layer, community and evidence without losing edge direction', () => {
+  const researchGraph: GraphResponse = { ...graph,
+    nodes: graph.nodes.map((node) => ({ ...node, layer: 'micro', community_id: 'community-1' })),
+    edges: graph.edges.map((edge) => ({ ...edge, rpc: 0.8, scs: 0.7, evidence: [] })),
+  }
+  const data = buildGraphExport(researchGraph,
+    new Map(graph.nodes.map((node) => [node.id, { x: 0, y: 0 }])), {}, '#000')
+  assert.equal(data.nodes[0].layer, 'micro')
+  assert.equal(data.nodes[0].community_id, 'community-1')
+  const xml = serializeGraphMl(data)
+  assert.match(xml, /edgedefault="directed"/)
+  assert.match(xml, /key="rpc">0.8/)
+  assert.match(xml, /key="community_id">community-1/)
+})
+
 test('truncates graph labels after ten Unicode characters', () => {
   assert.equal(truncateGraphLabel('中华人民共和国数据安全法'), '中华人民共和国数据安…')
   assert.equal(truncateGraphLabel('安全义务'), '安全义务')

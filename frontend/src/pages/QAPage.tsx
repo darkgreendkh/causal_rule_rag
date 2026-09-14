@@ -12,8 +12,12 @@ import {
   User,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
-import { askQuestion } from '../api'
+import { askQuestion, loadResearchSummary } from '../api'
+import WorkflowPanel from '../components/WorkflowPanel'
+import { CausalPaths, GapList, RuleChecks } from '../components/ResearchEvidence'
 import {
   appendConversationTurn,
   deleteConversation,
@@ -26,7 +30,7 @@ import {
 } from '../conversationStore'
 import type { ConversationItem } from '../conversationStore'
 import { formatSourceChunk } from '../sourceChunks'
-import type { ConversationHistoryTurn, RetrievalMode } from '../types'
+import type { ConversationHistoryTurn, Facts, ResearchContext, ResearchSummary, RetrievalMode } from '../types'
 
 const MAX_HISTORY_TURNS = 3
 
@@ -54,6 +58,21 @@ export default function QAPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [storageError, setStorageError] = useState('')
+  const [research, setResearch] = useState<ResearchSummary | null>(null)
+  const [researchError, setResearchError] = useState('')
+  const [matterId, setMatterId] = useState('')
+  const [region, setRegion] = useState('武汉')
+  const [asOf, setAsOf] = useState(() => new Date().toLocaleDateString('en-CA'))
+  const [profile, setProfile] = useState('full')
+  const [dataset, setDataset] = useState<'uploaded' | 'research'>('uploaded')
+  const [facts, setFacts] = useState<Facts>({})
+  const [completedSteps, setCompletedSteps] = useState<string[]>([])
+  const matter = research?.matters.find((item) => item.id === matterId)
+  const context: ResearchContext = { dataset, matter_id: dataset === 'research' ? matterId || undefined : undefined, region, as_of: asOf, profile, facts: dataset === 'research' ? facts : {}, completed_steps: dataset === 'research' ? completedSteps : [] }
+
+  useEffect(() => {
+    void loadResearchSummary().then((data) => { setResearch(data); if (data.build_id) setDataset('research') }).catch((err: unknown) => setResearchError(err instanceof Error ? err.message : '研究事项加载失败'))
+  }, [])
 
   const activeConversation = useMemo(
     () => conversationStore.conversations.find(
@@ -120,12 +139,13 @@ export default function QAPage() {
     setLoading(true)
     setError('')
     try {
-      const result = await askQuestion(normalized, mode, history)
+      const result = await askQuestion(normalized, mode, history, context)
       const item: ConversationItem = {
         id: window.crypto.randomUUID(),
         question: normalized,
         createdAt: new Date().toISOString(),
         result,
+        context,
       }
       setConversationStore((current) => appendConversationTurn(
         current,
@@ -196,6 +216,21 @@ export default function QAPage() {
 
   return (
     <section className="qa-page">
+      <div className="panel research-context">
+        <div className="research-toolbar">
+          <label>问答资料库<select aria-label="问答资料库" value={dataset} disabled={loading} onChange={(event) => { setDataset(event.target.value as 'uploaded' | 'research'); if (event.target.value === 'uploaded' && mode === 'causal') setMode('hybrid') }}><option value="research">研究资料库</option><option value="uploaded">上传文档库</option></select></label>
+          <label>办事事项<select aria-label="办事事项" value={matterId} disabled={loading || dataset !== 'research'} onChange={(event) => { setMatterId(event.target.value); setFacts({}); setCompletedSteps([]) }}>
+            <option value="">全部事项／一般政策问答</option>{research?.matters.map((item) => <option key={item.id} value={item.id}>{item.category} · {item.name}</option>)}
+          </select></label>
+          <label>适用地域<select aria-label="适用地域" value={region} disabled={loading} onChange={(event) => setRegion(event.target.value)}><option>武汉</option><option>湖北</option><option>全国</option></select></label>
+          <label>业务日期<input aria-label="业务日期" type="date" value={asOf} disabled={loading} onChange={(event) => setAsOf(event.target.value)} /></label>
+          <label>研究配置<select aria-label="研究配置" value={profile} disabled={loading} onChange={(event) => setProfile(event.target.value)}>
+            {!research?.profiles.length && <option value="full">完整方法</option>}{research?.profiles.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+          </select></label>
+        </div>
+        <p className="muted">三种模式使用所选资料库。因果模式按地域、业务日期和下方事实校验；历史政策只适用于对应时期。</p>
+        {researchError && <p className="error-banner">{researchError}</p>}
+      </div>
       <div className="qa-workspace">
         <div className="panel conversation-panel">
           <div className="conversation-status">
@@ -305,11 +340,11 @@ export default function QAPage() {
                 <h2>从一个法规问题开始</h2>
                 <p>你可以继续追问“上述义务”“这种情况”等上下文问题。</p>
                 <div>
-                  <button type="button" onClick={() => setQuestion('数据处理者需要履行哪些安全义务？')}>
-                    数据处理者有哪些安全义务？
+                  <button type="button" onClick={() => { setDataset('research'); setMode('causal'); setQuestion('工伤认定申请缺少诊断证明，应当如何补正？') }}>
+                    工伤认定缺少材料如何补正？
                   </button>
-                  <button type="button" onClick={() => setQuestion('发生数据安全事件后应当如何处理？')}>
-                    安全事件应当如何处理？
+                  <button type="button" onClick={() => { setDataset('research'); setMode('causal'); setQuestion('养老保险关系转入需要满足什么条件，先办理哪一步？') }}>
+                    养老保险关系如何转入？
                   </button>
                 </div>
               </div>
@@ -324,14 +359,23 @@ export default function QAPage() {
                   </div>
                   <div className="assistant-message-row">
                     <div className="message-avatar bot-avatar"><Bot size={17} /></div>
-                    <button
+                    <div
                       className={turn.id === selectedTurn?.id ? 'assistant-message selected' : 'assistant-message'}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setSelectedTurnId(turn.id)}
+                      onKeyDown={(event) => {
+                        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                          event.preventDefault()
+                          setSelectedTurnId(turn.id)
+                        }
+                      }}
                     >
-                      <span className="answer-text">{turn.result.answer}</span>
+                      <div className="answer-text">
+                        <Markdown skipHtml remarkPlugins={[remarkGfm]}>{turn.result.answer}</Markdown>
+                      </div>
                       <small>{turn.result.sources.length} 条证据 · 点击查看详情</small>
-                    </button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -358,6 +402,7 @@ export default function QAPage() {
 
           <form className="question-composer" onSubmit={submitQuestion}>
             <div className="compact-mode-switch" aria-label="检索模式">
+              <button type="button" className={mode === 'causal' ? 'active' : ''} onClick={() => { setDataset('research'); setMode('causal') }}><Network size={14} />规则与因果增强</button>
               <button
                 type="button"
                 className={mode === 'vector' ? 'active' : ''}
@@ -390,7 +435,7 @@ export default function QAPage() {
                 }}
               />
               <span>{question.length} / 2000</span>
-              <button type="submit" aria-label="发送问题" disabled={!question.trim() || loading}>
+              <button type="submit" aria-label="发送问题" disabled={!question.trim() || loading || (mode === 'causal' && !asOf)}>
                 <Send size={18} />
               </button>
             </div>
@@ -410,6 +455,10 @@ export default function QAPage() {
           ) : (
             <>
               <p className="selected-question">{selectedTurn.question}</p>
+              {selectedTurn.context && <p className="muted">{selectedTurn.context.dataset === 'research' ? '研究资料库' : '上传文档库'} · {selectedTurn.context.region} · {selectedTurn.context.as_of} · {selectedTurn.context.profile}</p>}
+              {!!selectedTurn.result.knowledge_gaps?.length && <details className="research-gap-summary"><summary>资料说明与缺口（{selectedTurn.result.knowledge_gaps.length} 条）</summary><GapList gaps={selectedTurn.result.knowledge_gaps} /></details>}
+              {!!selectedTurn.result.rule_checks?.length && <details className="research-gap-summary"><summary>规则校验与路径诊断（{selectedTurn.result.rule_checks.length} 项）</summary><RuleChecks checks={selectedTurn.result.rule_checks} /></details>}
+              <CausalPaths paths={selectedTurn.result.causal_paths} />
               <div className="evidence-list">
                 {selectedTurn.result.sources.length === 0 ? (
                   <p className="muted">本轮没有召回可用证据。</p>
@@ -451,6 +500,7 @@ export default function QAPage() {
           )}
         </aside>
       </div>
+      {dataset === 'research' && matter && <WorkflowPanel key={matter.id} matter={matter} context={context} onFactsChange={setFacts} onCompletedChange={setCompletedSteps} />}
     </section>
   )
 }
